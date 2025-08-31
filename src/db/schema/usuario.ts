@@ -1,13 +1,12 @@
-import { boolean, date, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { boolean, date, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
 
-// Definição da tabela 'usuario'
 export const usuario = pgTable('usuario', {
-  id: uuid('id').primaryKey().defaultRandom(),  // ID único usando UUID com valor aleatório
-  usuLogin: text('usuLogin').notNull(),        // Login do usuário
-  usuSenha: text('usuSenha').notNull(),        // Senha do usuário
-  usuNome: text('usuNome').notNull(),          // Nome do usuário
-  usuDataNasc: date('usuDataNasc').notNull(),  // Data de nascimento
-  usuCpf: text('usuCpf').notNull(),            // CPF do usuário
-  usuTelefone: text('usuTelefone'),           // Telefone do usuário (pode ser nulo)
-  usuAtivo: boolean('usuAtivo').notNull(),     // Indica se o usuário está ativo
+  usuID: uuid('usuID').primaryKey().defaultRandom(),
+  usuLogin: varchar('usuLogin', { length: 50 }).notNull().unique(),
+  usuSenha: text('usuSenha').notNull(),
+  usuNome: varchar('usuNome', { length: 100 }).notNull(),
+  usuDataNasc: date('usuDataNasc').notNull(),
+  usuCpf: varchar('usuCpf', { length: 11 }).notNull().unique(),
+  usuTelefone: text('usuTelefone'),
+  usuAtivo: boolean('usuAtivo').notNull(),
 });
