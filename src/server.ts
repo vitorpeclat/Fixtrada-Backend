@@ -1,9 +1,12 @@
 import Fastify from 'fastify'
 import { env } from './env.ts'
+import { authRoutes } from './http/cadastro.ts'
 
 const app = Fastify({
   logger: true
 })
+
+app.register(authRoutes);
 
 // Declare a route
 app.get('/health', function (request, reply) {

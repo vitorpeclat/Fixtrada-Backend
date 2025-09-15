@@ -1,14 +1,13 @@
-import { FastifyInstance } from 'fastify';
-import { db } from '../db/connection.ts';
+import { db } from '../db/connection.ts'; // Sua conexão Drizzle
+import { criarClienteSchema, criarPrestadorSchema } from './validators/auth.validators.ts';
 import { hash } from 'bcrypt';
 import { eq } from 'drizzle-orm';
 import z from 'zod';
 import { endereco } from '../db/schema/endereco.ts';
 import { prestadorServico } from '../db/schema/prestadorServico.ts';
 import { usuario } from '../db/schema/usuario.ts';
-import { criarClienteSchema, criarPrestadorSchema } from './validators/auth.validators.ts';
 
-export async function authRoutes(app: FastifyInstance) {
+export async function authRoutes(app: any) {
   
   // Endpoint para cadastrar Cliente (RF001)
   app.post('/usuario', async (request, reply) => {
