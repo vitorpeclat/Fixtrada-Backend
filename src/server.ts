@@ -1,5 +1,5 @@
 import Fastify from 'fastify'
-import { env } from 'process';
+import { env } from './env.ts' // <<< CORREÇÃO APLICADA AQUI
 import { cadastroRoutes } from './http/cadastro.ts';
 import { loginRoutes } from './http/login.ts';
 
@@ -17,7 +17,7 @@ app.get('/health', function (request, reply) {
 })
 
 // Inicia o servidor
-app.listen({ port: Number(env.PORT), host: '0.0.0.0' }, function (err, address) {
+app.listen({ port: env.PORT, host: '0.0.0.0' }, function (err, address) {
   if (err) {
     app.log.error(err)
     process.exit(1)
