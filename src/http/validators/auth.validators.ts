@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// Esquema para o corpo da requisição de cadastro de cliente
 export const criarClienteSchema = z.object({
   usuLogin: z.string().email('Formato de e-mail inválido.'),
   usuSenha: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.'),
@@ -9,6 +10,7 @@ export const criarClienteSchema = z.object({
   usuTelefone: z.string().optional(),
 });
 
+// Esquema para o corpo da requisição de cadastro de prestador
 export const criarPrestadorSchema = z.object({
   mecCNPJ: z.string().length(14, 'O CNPJ deve ter 14 dígitos.'),
   mecLogin: z.string().email('Formato de e-mail inválido.'),
@@ -21,4 +23,10 @@ export const criarPrestadorSchema = z.object({
     endCidade: z.string(),
     endEstado: z.string().length(2),
   }),
+});
+
+// Esquema para o corpo da requisição de login
+export const loginSchema = z.object({
+    login: z.string().email('O e-mail é obrigatório e deve ser válido.'),
+    senha: z.string().min(1, 'A senha é obrigatória.'),
 });
