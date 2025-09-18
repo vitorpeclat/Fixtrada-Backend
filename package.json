@@ -1,8 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "node --env-file .env --watch src/server.ts",
-    "start": "node --env-file .env src/server.ts"
+    "dev": "tsx --env-file .env --watch src/server.ts",
+    "start": "tsx --env-file .env src/server.ts"
   },
   "dependencies": {
     "@types/uuid": "^10.0.0",
