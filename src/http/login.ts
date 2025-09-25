@@ -11,7 +11,6 @@ import { loginSchema } from './validators/auth.validators.ts';
 const JWT_SECRET = process.env.JWT_SECRET || 'uma-chave-secreta-para-desenvolvimento';
 
 export async function loginRoutes(app: FastifyInstance) {
-  // Endpoint para Login (RF002)
   app.post('/login', async (request, reply) => {
     try {
       const { login, senha } = loginSchema.parse(request.body);
@@ -39,7 +38,6 @@ export async function loginRoutes(app: FastifyInstance) {
         return reply.status(401).send({ message: 'Credenciais inválidas.' });
       }
 
-      // <<< CORREÇÃO APLICADA AQUI
       const token = jwt.default.sign(
         { 
           sub: user.usuID || user.mecCNPJ,

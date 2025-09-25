@@ -10,7 +10,6 @@ import { criarClienteSchema, criarPrestadorSchema } from './validators/auth.vali
 
 export async function cadastroRoutes(app: FastifyInstance) {
   
-  // Endpoint para cadastrar Cliente (RF001)
   app.post('/cadastro', async (request, reply) => {
     try {
       const dadosValidados = criarClienteSchema.parse(request.body);
@@ -45,7 +44,6 @@ export async function cadastroRoutes(app: FastifyInstance) {
     }
   });
 
-  // Endpoint para cadastrar Prestador (RF001)
   app.post('/prestador', async (request, reply) => {
     try {
       const dadosValidados = criarPrestadorSchema.parse(request.body);
