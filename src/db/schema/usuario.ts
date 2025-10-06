@@ -9,4 +9,6 @@ export const usuario = pgTable('usuario', {
   usuCpf: varchar('usuCpf', { length: 11 }).notNull().unique(),
   usuTelefone: text('usuTelefone'),
   usuAtivo: boolean('usuAtivo').notNull(),
+  // LINHA ADICIONADA
+  usuFoto: text('usuFoto'), // Pode ser a URL para a imagem
 });

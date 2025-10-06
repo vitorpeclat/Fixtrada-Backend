@@ -8,5 +8,7 @@ export const prestadorServico = pgTable('prestador_servico', {
   mecLogin: varchar('mecLogin', { length: 50 }).notNull().unique(),
   mecSenha: text('mecSenha').notNull(),
   mecAtivo: boolean('mecAtivo').notNull(),
+  // LINHA ADICIONADA
+  mecFoto: text('mecFoto'), // Pode ser a URL para a imagem
   fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 9 }).notNull().references(() => endereco.endCEP),
 });

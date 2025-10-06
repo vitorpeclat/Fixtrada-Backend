@@ -8,6 +8,13 @@
       "when": 1756682321480,
       "tag": "0000_typical_dark_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759780606119,
+      "tag": "0001_quiet_ultimatum",
+      "breakpoints": true
     }
   ]
 }
