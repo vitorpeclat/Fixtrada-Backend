@@ -11,6 +11,7 @@
     "drizzle-orm": "^0.44.4",
     "fastify": "^5.6.0",
     "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.1.6",
     "pg": "^8.16.3",
     "postgres": "^3.4.7",
     "ts-node": "^10.9.2",

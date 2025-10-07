@@ -8,7 +8,7 @@ export const usuario = pgTable('usuario', {
   usuDataNasc: date('usuDataNasc').notNull(),
   usuCpf: varchar('usuCpf', { length: 11 }).notNull().unique(),
   usuTelefone: text('usuTelefone'),
-  usuAtivo: boolean('usuAtivo').notNull(),
+  usuAtivo: boolean('usuAtivo').notNull().default(true),
   // LINHA ADICIONADA
   usuFoto: text('usuFoto'), // Pode ser a URL para a imagem
 });

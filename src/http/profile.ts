@@ -20,8 +20,7 @@ export async function profileRoutes(app: FastifyInstance) {
   // Endpoint para editar dados cadastrais (RF004)
   app.put('/profile', async (request, reply) => {
     try {
-      // @ts-ignore - 'user' é adicionado pelo hook de autenticação
-      const { sub: userId, role } = request.user;
+      const { sub: userId, role } = request.user; // O @ts-ignore não é mais necessário
 
       // Valida o corpo da requisição
       const dadosValidados = updateUserSchema.parse(request.body);
@@ -39,7 +38,7 @@ export async function profileRoutes(app: FastifyInstance) {
         return reply.status(404).send({ message: 'Usuário não encontrado.' });
       }
 
-      return reply.status(200).send({ message: 'Dados atualizados com sucesso!' });
+      return reply.status(200).send({ user: user[0] });
 
     } catch (error) {
       if (error instanceof z.ZodError) {
