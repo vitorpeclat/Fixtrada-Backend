@@ -6,7 +6,7 @@ import * as jwt from 'jsonwebtoken';
 import { db } from '../db/connection.ts';
 import { prestadorServico } from '../db/schema/prestadorServico.ts';
 import { usuario } from '../db/schema/usuario.ts';
-import { loginSchema } from './validators/auth.validators.ts';
+import { loginSchema } from './schemas/auth.ts';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'uma-chave-secreta-para-desenvolvimento';
 
@@ -15,26 +15,29 @@ export async function loginRoutes(app: FastifyInstance) {
     try {
       const { login, senha } = loginSchema.parse(request.body);
 
-      let user: any = await db.query.usuario.findFirst({
+      // Tenta encontrar como cliente primeiro
+      let user: any = await db.query.usuario.findFirst({ // 'any' para acomodar os dois tipos
         where: eq(usuario.usuLogin, login),
       });
-
       let userType = 'cliente';
       
+      // Se não for cliente, tenta encontrar como prestador
       if (!user) {
         user = await db.query.prestadorServico.findFirst({
           where: eq(prestadorServico.mecLogin, login),
         });
         userType = 'prestador';
       }
-
-      if (!user || (user.usuAtivo === false) || (user.mecAtivo === false)) {
+      
+      // Verifica se o usuário existe e se está ativo
+      const isUserActive = userType === 'cliente' ? user?.usuAtivo : user?.mecAtivo;
+      if (!user || !isUserActive) {
         return reply.status(401).send({ message: 'Credenciais inválidas.' });
       }
       
-      const senhaCorreta = await compare(senha, user.usuSenha || user.mecSenha);
-
-      if (!senhaCorreta) {
+      // Verifica a senha
+      const isPasswordCorrect = await compare(senha, user.usuSenha || user.mecSenha);
+      if (!isPasswordCorrect) {
         return reply.status(401).send({ message: 'Credenciais inválidas.' });
       }
 
@@ -48,13 +51,12 @@ export async function loginRoutes(app: FastifyInstance) {
       );
 
       return reply.status(200).send({ 
-        message: 'Login bem-sucedido!',
-        token: token,
+        token,
         user: {
             id: user.usuID || user.mecCNPJ,
             nome: user.usuNome || user.mecLogin,
             role: userType,
-        }
+        },
       });
 
     } catch (error) {

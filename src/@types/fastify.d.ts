@@ -1,5 +1,5 @@
 import 'fastify'
-import { JwtUserPayload } from './hooks/auth'
+import { JwtUserPayload } from '../http/hooks/auth.ts'
 
 declare module 'fastify' {
   export interface FastifyRequest {

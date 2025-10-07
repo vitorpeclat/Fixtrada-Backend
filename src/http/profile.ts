@@ -1,16 +1,10 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/connection.ts';
-import { usuario } from '../db/schema/usuario.ts';
 import { eq } from 'drizzle-orm';
 import { authHook } from './hooks/auth.ts';
-
-// Zod Schema para a atualização
-const updateUserSchema = z.object({
-  usuNome: z.string().min(3).optional(),
-  usuTelefone: z.string().optional(),
-  usuFoto: z.string().url().optional(),
-});
+import { usuario } from '../db/schema/usuario.ts';
+import { updateUserSchema } from './schemas/profile.ts';
 
 export async function profileRoutes(app: FastifyInstance) {
   

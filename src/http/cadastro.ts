@@ -6,7 +6,7 @@ import { db } from '../db/connection.ts';
 import { endereco } from '../db/schema/endereco.ts';
 import { prestadorServico } from '../db/schema/prestadorServico.ts';
 import { usuario } from '../db/schema/usuario.ts';
-import { criarClienteSchema, criarPrestadorSchema } from './validators/auth.validators.ts';
+import { criarClienteSchema, criarPrestadorSchema } from './schemas/auth.ts';
 
 export async function cadastroRoutes(app: FastifyInstance) {
   
@@ -87,4 +87,3 @@ export async function cadastroRoutes(app: FastifyInstance) {
     }
   });
 }
-

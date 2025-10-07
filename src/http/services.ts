@@ -4,16 +4,8 @@ import { db } from '../db/connection.ts';
 import { registroServico } from '../db/schema/registroServico.ts';
 import { authHook } from './hooks/auth.ts';
 import { customAlphabet } from 'nanoid';
-
 const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
-
-const createServiceRequestSchema = z.object({
-    regDescricao: z.string(),
-    fk_carro_carID: z.string().uuid(),
-    fk_prestador_servico_mecCNPJ: z.string(),
-    fk_tipo_servico_tseID: z.string().uuid(),
-    // O endereço (CEP) virá do prestador selecionado
-});
+import { createServiceRequestSchema } from './schemas/services.ts';
 
 export async function serviceRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
