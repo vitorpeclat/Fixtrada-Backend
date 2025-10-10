@@ -27,13 +27,15 @@ export async function cadastroRoutes(app: FastifyInstance) {
 
       const senhaHash = await hash(dadosValidados.usuSenha, 8);
 
-      await db.insert(usuario).values({
-        ...dadosValidados,
-        usuSenha: senhaHash,
-        usuAtivo: true,
-      });
+       const [newUser] = await db.insert(usuario).values({
+            ...dadosValidados,
+            usuSenha: senhaHash,
+            usuAtivo: true,
+        }).returning({
+            usuID: usuario.usuID,
+        });
 
-      return reply.status(201).send({ message: 'Cliente cadastrado com sucesso!' });
+      return reply.status(201).send({ message: 'Cliente cadastrado com sucesso!', usuarioID: newUser.usuID});
 
     } catch (error) {
       if (error instanceof z.ZodError) {

@@ -3,6 +3,7 @@ import { usuario } from "./usuario.ts";
 
 export const carro = pgTable('carro', {
   carID: uuid('carID').primaryKey().defaultRandom(),
+  carPlaca: varchar('carPlaca', { length: 7 }).notNull().unique(),
   carMarca: varchar('carMarca', { length: 50 }).notNull(),
   carModelo: varchar('carModelo', { length: 50 }).notNull(),
   carAno: integer('carAno').notNull(),

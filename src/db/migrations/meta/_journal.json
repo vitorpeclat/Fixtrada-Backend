@@ -15,6 +15,13 @@
       "when": 1759780606119,
       "tag": "0001_quiet_ultimatum",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760054416218,
+      "tag": "0002_dusty_bishop",
+      "breakpoints": true
     }
   ]
 }
