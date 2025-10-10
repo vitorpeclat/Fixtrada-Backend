@@ -12,4 +12,5 @@ export const vehicleSchema = z.object({
     carOpTrocaOleo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de data inválido (AAAA-MM-DD)').optional(),
     carOpTrocaPneu: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de data inválido (AAAA-MM-DD)').optional(),
     carOpRevisao: z.string().max(255).optional(),
+    usuID:  z.string().length(36),
 });

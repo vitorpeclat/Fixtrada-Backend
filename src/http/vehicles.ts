@@ -3,25 +3,16 @@ import { z } from 'zod';
 import { db } from '../db/connection.ts';
 import { carro } from '../db/schema/carro.ts';
 import { eq } from 'drizzle-orm';
-import { authHook } from './hooks/auth.ts';
 import { vehicleSchema } from './schemas/vehicles.ts';
 
 export async function vehicleRoutes(app: FastifyInstance) {
-    app.addHook('onRequest', authHook);
-
     // Criar novo veículo (RF005 - Create)
     app.post('/vehicles', async (request, reply) => {
         try {
-            const { sub: userId, role } = request.user;
-            if (role !== 'cliente') {
-                return reply.status(403).send({ message: 'Apenas clientes podem cadastrar veículos.' });
-            }
-
             const dadosValidados = vehicleSchema.parse(request.body);
-
             const [newVehicle] = await db.insert(carro).values({
                 ...dadosValidados,
-                fk_usuario_usuID: userId,
+                fk_usuario_usuID: dadosValidados.usuID,
             }).returning();
 
             return reply.status(201).send(newVehicle);
@@ -30,7 +21,7 @@ export async function vehicleRoutes(app: FastifyInstance) {
             if (error instanceof z.ZodError) {
                 return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
             }
-            return reply.status(500).send({ message: 'Erro interno.' });
+            return reply.status(500).send({ error });
         }
     });
 
