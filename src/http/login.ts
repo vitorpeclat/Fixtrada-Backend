@@ -2,13 +2,10 @@ import type { FastifyInstance } from 'fastify';
 import { compare } from 'bcrypt';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import * as jwt from 'jsonwebtoken';
 import { db } from '../db/connection.ts';
 import { prestadorServico } from '../db/schema/prestadorServico.ts';
 import { usuario } from '../db/schema/usuario.ts';
 import { loginSchema } from './schemas/auth.ts';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'uma-chave-secreta-para-desenvolvimento';
 
 export async function loginRoutes(app: FastifyInstance) {
   app.post('/login', async (request, reply) => {
@@ -41,16 +38,14 @@ export async function loginRoutes(app: FastifyInstance) {
         return reply.status(401).send({ message: 'Credenciais inválidas.' });
       }
 
-      const token = jwt.default.sign(
-        { 
+      const token = await reply.jwtSign(
+        {
           sub: user.usuID || user.mecCNPJ,
-          role: userType 
-        },
-        JWT_SECRET,
-        { expiresIn: '7d' }
+          role: userType
+        }
       );
 
-      return reply.status(200).send({ 
+      return reply.status(200).send({
         token,
         user: {
             id: user.usuID || user.mecCNPJ,

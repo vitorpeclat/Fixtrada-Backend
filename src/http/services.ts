@@ -2,10 +2,13 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/connection.ts';
 import { registroServico } from '../db/schema/registroServico.ts';
-import { authHook } from './hooks/auth.ts';
+import { authHook, JwtUserPayload } from './hooks/auth.ts';
 import { customAlphabet } from 'nanoid';
-const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 import { createServiceRequestSchema } from './schemas/services.ts';
+import { eq } from 'drizzle-orm';
+import { prestadorServico } from '../db/schema/prestadorServico.ts';
+
+const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 
 export async function serviceRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
@@ -13,7 +16,8 @@ export async function serviceRoutes(app: FastifyInstance) {
     // Registro de novas solicitações de serviço (RF007)
     app.post('/services', async (request, reply) => {
         try {
-            if (request.user.role !== 'cliente') {
+            const user = request.user as JwtUserPayload;
+            if (user.role !== 'cliente') {
                 return reply.status(403).send({ message: 'Apenas clientes podem solicitar serviços.' });
             }
             
@@ -21,7 +25,7 @@ export async function serviceRoutes(app: FastifyInstance) {
 
             // Buscar o endereço do prestador para registrar no serviço
             const prestador = await db.query.prestadorServico.findFirst({
-                where: (fields, { eq }) => eq(fields.mecCNPJ, dadosValidados.fk_prestador_servico_mecCNPJ)
+                where: eq(prestadorServico.mecCNPJ, dadosValidados.fk_prestador_servico_mecCNPJ)
             });
 
             if(!prestador) {
@@ -45,7 +49,8 @@ export async function serviceRoutes(app: FastifyInstance) {
             if (error instanceof z.ZodError) {
                 return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
             }
-            return reply.status(500).send({ message: 'Erro interno.' });
+            console.error(error);
+            return reply.status(500).send({ message: 'Erro interno no servidor.' });
         }
     });
 }

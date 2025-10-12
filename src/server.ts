@@ -1,8 +1,8 @@
 import Fastify from 'fastify'
+import jwt from '@fastify/jwt'
 import { env } from './env.ts'
 import { cadastroRoutes } from './http/cadastro.ts';
 import { loginRoutes } from './http/login.ts';
-// IMPORTAÇÕES ADICIONADAS
 import { profileRoutes } from './http/profile.ts';
 import { vehicleRoutes } from './http/vehicles.ts';
 import { serviceRoutes } from './http/services.ts';
@@ -11,12 +11,18 @@ const app = Fastify({
   logger: true
 })
 
-// Adiciona um decorador para armazenar os dados do usuário na requisição
-app.decorateRequest('user', null)
+// Registra o plugin JWT
+app.register(jwt, {
+  secret: env.JWT_SECRET,
+  decode: { complete: true }, // para acessar o payload completo
+  sign: {
+    expiresIn: '7d',
+  }
+});
 
+// Registra as rotas da aplicação
 app.register(cadastroRoutes);
 app.register(loginRoutes);
-// REGISTROS ADICIONADOS
 app.register(profileRoutes);
 app.register(vehicleRoutes);
 app.register(serviceRoutes);

@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/connection.ts';
 import { eq } from 'drizzle-orm';
-import { authHook } from './hooks/auth.ts';
+import { authHook, JwtUserPayload } from './hooks/auth.ts';
 import { usuario } from '../db/schema/usuario.ts';
 import { updateUserSchema } from './schemas/profile.ts';
 
@@ -14,7 +14,7 @@ export async function profileRoutes(app: FastifyInstance) {
   // Endpoint para editar dados cadastrais (RF004)
   app.put('/profile', async (request, reply) => {
     try {
-      const { sub: userId, role } = request.user; // O @ts-ignore não é mais necessário
+      const { sub: userId, role } = request.user as JwtUserPayload;
 
       // Valida o corpo da requisição
       const dadosValidados = updateUserSchema.parse(request.body);
@@ -32,7 +32,7 @@ export async function profileRoutes(app: FastifyInstance) {
         return reply.status(404).send({ message: 'Usuário não encontrado.' });
       }
 
-      return reply.status(200).send({ user: user[0] });
+      return reply.status(200).send(user[0]);
 
     } catch (error) {
       if (error instanceof z.ZodError) {

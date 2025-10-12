@@ -62,6 +62,7 @@ async function seed() {
         const usuarioAleatorio = insertedUsuarios[Math.floor(Math.random() * insertedUsuarios.length)];
         const [insertedCarro] = await db.insert(carro).values({
             carID: uuidv4(),
+            carPlaca: faker.string.alphanumeric(7),
             carMarca: faker.vehicle.manufacturer(),
             carModelo: faker.vehicle.model(),
             carAno: faker.date.past({ years: 10 }).getFullYear(),
@@ -129,7 +130,6 @@ async function seed() {
                 menID: uuidv4(),
                 menSender: faker.person.fullName(),
                 menConteudo: faker.lorem.sentence(),
-                menData: faker.date.recent().toISOString().split('T')[0],
                 fk_registro_servico_regID: insertedRegistro.regID,
             });
         }
