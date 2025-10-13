@@ -1,11 +1,12 @@
 import Fastify from 'fastify'
 import jwt from '@fastify/jwt'
 import { env } from './env.ts'
-import { cadastroRoutes } from './http/cadastro.ts';
-import { loginRoutes } from './http/login.ts';
-import { profileRoutes } from './http/profile.ts';
-import { vehicleRoutes } from './http/vehicles.ts';
-import { serviceRoutes } from './http/services.ts';
+import { cadastroClienteRoutes } from './http/cliente/cadastroCliente.ts';
+import { cadastroPrestadorRoutes } from './http/prestador/cadastroPrestador.ts';
+import { loginClienteRoutes } from './http/cliente/loginCliente.ts';
+import { loginPrestadorRoutes } from './http/prestador/loginPrestador.ts';
+import { vehicleClienteRoutes } from './http/cliente/vehiclesCliente.ts';
+import { serviceClienteRoutes } from './http/cliente/serviceCliente.ts';
 
 const app = Fastify({
   logger: true
@@ -21,11 +22,12 @@ app.register(jwt, {
 });
 
 // Registra as rotas da aplicação
-app.register(cadastroRoutes);
-app.register(loginRoutes);
-app.register(profileRoutes);
-app.register(vehicleRoutes);
-app.register(serviceRoutes);
+app.register(cadastroClienteRoutes);
+app.register(cadastroPrestadorRoutes);
+app.register(loginClienteRoutes);
+app.register(loginPrestadorRoutes);
+app.register(vehicleClienteRoutes);
+app.register(serviceClienteRoutes);
 
 
 app.get('/health', function (request, reply) {

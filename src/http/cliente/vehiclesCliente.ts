@@ -1,23 +1,22 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { db } from '../db/connection.ts';
-import { carro } from '../db/schema/carro.ts';
+import { db } from '../../db/connection.ts';
+import { carro } from '../../db/schema/carro.ts';
 import { eq } from 'drizzle-orm';
-import { vehicleSchema } from './schemas/vehicles.ts';
-import { authHook, JwtUserPayload } from './hooks/auth.ts';
+import { vehicleSchema } from '../schemas/vehicles.ts';
+import { authHook, JwtUserPayload } from '../hooks/auth.ts';
 
-export async function vehicleRoutes(app: FastifyInstance) {
-    // Adiciona o hook de autenticação para todas as rotas deste arquivo
+export async function vehicleClienteRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
 
-    // Criar novo veículo (RF005 - Create)
+    // Criar novo veículo
     app.post('/vehicle', async (request, reply) => {
         try {
             const { sub: userId } = request.user as JwtUserPayload;
             const dadosValidados = vehicleSchema.parse(request.body);
             const [newVehicle] = await db.insert(carro).values({
                 ...dadosValidados,
-                fk_usuario_usuID: userId, // Usar o ID do usuário autenticado do token
+                fk_usuario_usuID: userId,
             }).returning();
 
             return reply.status(201).send(newVehicle);
@@ -31,7 +30,7 @@ export async function vehicleRoutes(app: FastifyInstance) {
         }
     });
 
-    // Listar veículos do cliente (RF005 - Read)
+    // Listar veículos do cliente
     app.get('/vehicles', async (request, reply) => {
         const { sub: userId } = request.user as JwtUserPayload;
         
@@ -41,6 +40,4 @@ export async function vehicleRoutes(app: FastifyInstance) {
 
         return reply.send(vehicles);
     });
-
-    // Implementar PUT para atualizar e DELETE para remover
 }

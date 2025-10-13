@@ -1,26 +1,21 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { db } from '../db/connection.ts';
-import { registroServico } from '../db/schema/registroServico.ts';
-import { authHook, JwtUserPayload } from './hooks/auth.ts';
+import { db } from '../../db/connection.ts';
+import { registroServico } from '../../db/schema/registroServico.ts';
+import { authHook, JwtUserPayload } from '../hooks/auth.ts';
 import { customAlphabet } from 'nanoid';
-import { createServiceRequestSchema } from './schemas/services.ts';
+import { createServiceRequestSchema } from '../schemas/service.ts';
 import { eq } from 'drizzle-orm';
-import { prestadorServico } from '../db/schema/prestadorServico.ts';
+import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 
 const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 
-export async function serviceRoutes(app: FastifyInstance) {
+export async function serviceClienteRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
 
     // Registro de novas solicitações de serviço (RF007)
     app.post('/services', async (request, reply) => {
         try {
-            const user = request.user as JwtUserPayload;
-            if (user.role !== 'cliente') {
-                return reply.status(403).send({ message: 'Apenas clientes podem solicitar serviços.' });
-            }
-            
             const dadosValidados = createServiceRequestSchema.parse(request.body);
 
             // Buscar o endereço do prestador para registrar no serviço
