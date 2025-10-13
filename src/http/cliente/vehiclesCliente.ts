@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '../../db/connection.ts';
 import { carro } from '../../db/schema/carro.ts';
 import { eq } from 'drizzle-orm';
-import { vehicleSchema } from '../schemas/vehicles.ts';
+import { vehicleSchema } from '../schemas/vehicle.ts';
 import { authHook, JwtUserPayload } from '../hooks/auth.ts';
 
 export async function vehicleClienteRoutes(app: FastifyInstance) {
