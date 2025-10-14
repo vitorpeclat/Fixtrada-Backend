@@ -1,5 +1,5 @@
 {
-  "id": "f8520b64-495f-4ad0-bafb-d9e51d44f1cb",
+  "id": "f005bd46-9fc8-4de2-b920-c4d6f0477d3b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -14,6 +14,12 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "carPlaca": {
+          "name": "carPlaca",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": true
         },
         "carMarca": {
           "name": "carMarca",
@@ -79,7 +85,8 @@
           "name": "carAtivo",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": true
         },
         "fk_usuario_usuID": {
           "name": "fk_usuario_usuID",
@@ -105,7 +112,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "carro_carPlaca_unique": {
+          "name": "carro_carPlaca_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "carPlaca"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -178,9 +193,10 @@
         },
         "menData": {
           "name": "menData",
-          "type": "date",
+          "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "fk_registro_servico_regID": {
           "name": "fk_registro_servico_regID",
@@ -249,7 +265,14 @@
           "name": "mecAtivo",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": true
+        },
+        "mecFoto": {
+          "name": "mecFoto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "fk_endereco_endCEP": {
           "name": "fk_endereco_endCEP",
@@ -298,6 +321,24 @@
           "primaryKey": true,
           "notNull": true,
           "default": "gen_random_uuid()"
+        },
+        "regCodigo": {
+          "name": "regCodigo",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regNotaCliente": {
+          "name": "regNotaCliente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regValor": {
+          "name": "regValor",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
         },
         "regDescricao": {
           "name": "regDescricao",
@@ -398,7 +439,15 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "registro_servico_regCodigo_unique": {
+          "name": "registro_servico_regCodigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "regCodigo"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -480,7 +529,14 @@
           "name": "usuAtivo",
           "type": "boolean",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": true
+        },
+        "usuFoto": {
+          "name": "usuFoto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},

@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1756682321480,
-      "tag": "0000_typical_dark_beast",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1759780606119,
-      "tag": "0001_quiet_ultimatum",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1760054416218,
-      "tag": "0002_dusty_bishop",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1760312377148,
-      "tag": "0003_soft_kingpin",
+      "when": 1760448859050,
+      "tag": "0000_overrated_brood",
       "breakpoints": true
     }
   ]
