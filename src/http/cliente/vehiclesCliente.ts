@@ -37,7 +37,6 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
         const vehicles = await db.query.carro.findMany({
             where: eq(carro.fk_usuario_usuID, userId),
         });
-
         return reply.send(vehicles);
     });
 }

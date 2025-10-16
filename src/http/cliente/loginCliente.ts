@@ -35,8 +35,11 @@ export async function loginClienteRoutes(app: FastifyInstance) {
         token,
         user: {
             id: user.usuID,
+            email: user.usuLogin,
             nome: user.usuNome,
             role: 'cliente',
+            telefone: user.usuTelefone,
+            dataNascimento: user.usuDataNasc,
         },
       });
 
@@ -44,7 +47,6 @@ export async function loginClienteRoutes(app: FastifyInstance) {
       if (error instanceof z.ZodError) {
         return reply.status(400).send({ message: 'Dados de login inválidos.', issues: error.format() });
       }
-      console.error(error);
       return reply.status(500).send({ message: 'Erro interno no servidor.' });
     }
   });
