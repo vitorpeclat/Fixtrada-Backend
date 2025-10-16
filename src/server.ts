@@ -7,6 +7,7 @@ import { loginClienteRoutes } from './http/cliente/loginCliente.ts';
 import { loginPrestadorRoutes } from './http/prestador/loginPrestador.ts';
 import { vehicleClienteRoutes } from './http/cliente/vehiclesCliente.ts';
 import { serviceClienteRoutes } from './http/cliente/serviceCliente.ts';
+import { verificacaoEmailClienteRoutes } from './http/cliente/verificacaoEmail.ts';
 import { updateClienteRoutes } from './http/cliente/updateCliente.ts';
 
 const app = Fastify({
@@ -29,6 +30,7 @@ app.register(loginClienteRoutes);
 app.register(loginPrestadorRoutes);
 app.register(vehicleClienteRoutes);
 app.register(serviceClienteRoutes);
+app.register(verificacaoEmailClienteRoutes);
 app.register(updateClienteRoutes)
 
 
