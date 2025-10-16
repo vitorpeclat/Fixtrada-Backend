@@ -21,6 +21,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "carPlaca": {
+          "name": "carPlaca",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": true
+        },
         "carMarca": {
           "name": "carMarca",
           "type": "varchar(50)",
@@ -87,6 +93,8 @@
           "primaryKey": false,
           "notNull": true,
           "default": true
+          "notNull": true,
+          "default": true
         },
         "fk_usuario_usuID": {
           "name": "fk_usuario_usuID",
@@ -112,6 +120,15 @@
         }
       },
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "carro_carPlaca_unique": {
+          "name": "carro_carPlaca_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "carPlaca"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "carro_carPlaca_unique": {
           "name": "carro_carPlaca_unique",
@@ -194,7 +211,10 @@
         "menData": {
           "name": "menData",
           "type": "timestamp",
+          "type": "timestamp",
           "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
           "notNull": true,
           "default": "now()"
         },
@@ -359,6 +379,24 @@
           "primaryKey": false,
           "notNull": false
         },
+        "regCodigo": {
+          "name": "regCodigo",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regNotaCliente": {
+          "name": "regNotaCliente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regValor": {
+          "name": "regValor",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
         "regDescricao": {
           "name": "regDescricao",
           "type": "text",
@@ -458,6 +496,15 @@
         }
       },
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "registro_servico_regCodigo_unique": {
+          "name": "registro_servico_regCodigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "regCodigo"
+          ]
+        }
+      },
       "uniqueConstraints": {
         "registro_servico_regCodigo_unique": {
           "name": "registro_servico_regCodigo_unique",

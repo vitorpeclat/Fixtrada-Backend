@@ -36,13 +36,13 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
       const agora = new Date();
       const usuCodigoVerificacaoExpira = new Date(agora.getTime() + 60 * 60 * 1000); // 1 hora
 
-       const [newUser] = await db.insert(usuario).values({
-            ...dadosValidados,
-            usuSenha: senhaHash,
-            usuAtivo: true,
-        }).returning({
-            usuID: usuario.usuID,
-        });
+      const [newUser] = await db.insert(usuario).values({
+          ...dadosValidados,
+          usuSenha: senhaHash,
+          usuAtivo: true,
+      }).returning({
+          usuID: usuario.usuID,
+      });
 
         const mail = await getMailClient();
         const message = await mail.sendMail({
