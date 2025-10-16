@@ -1,4 +1,4 @@
-import { boolean, date, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, date, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const usuario = pgTable('usuario', {
   usuID: uuid('usuID').primaryKey().defaultRandom(),
@@ -11,4 +11,7 @@ export const usuario = pgTable('usuario', {
   usuAtivo: boolean('usuAtivo').notNull().default(true),
   // LINHA ADICIONADA
   usuFoto: text('usuFoto'), // Pode ser a URL para a imagem
+  usuVerificado: boolean('usuVerificado').default(false),
+  usuCodigoVerificacao: text('usuCodigoVerificacao'),
+  usuCodigoVerificacaoExpira: timestamp('usuCodigoVerificacaoExpira', { withTimezone: true }),
 });

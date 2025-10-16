@@ -1,4 +1,4 @@
-import { boolean, doublePrecision, integer, pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 import { endereco } from "./endereco.ts";
 
 export const prestadorServico = pgTable('prestador_servico', {
@@ -10,5 +10,8 @@ export const prestadorServico = pgTable('prestador_servico', {
   mecAtivo: boolean('mecAtivo').notNull().default(true),
   // LINHA ADICIONADA
   mecFoto: text('mecFoto'), // Pode ser a URL para a imagem
+  mecVerificado: boolean('mecVerificado').default(false),
+  mecCodigoVerificacao: text('mecCodigoVerificacao'),
+  mecCodigoVerificacaoExpira: timestamp('mecCodigoVerificacaoExpira', { withTimezone: true }),
   fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 9 }).notNull().references(() => endereco.endCEP),
 });

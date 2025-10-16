@@ -1,5 +1,6 @@
 CREATE TABLE "carro" (
 	"carID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"carPlaca" varchar(7) NOT NULL,
 	"carMarca" varchar(50) NOT NULL,
 	"carModelo" varchar(50) NOT NULL,
 	"carAno" integer NOT NULL,
@@ -10,8 +11,9 @@ CREATE TABLE "carro" (
 	"carOpTrocaOleo" date,
 	"carOpTrocaPneu" date,
 	"carOpRevisao" varchar(255),
-	"carAtivo" boolean NOT NULL,
-	"fk_usuario_usuID" uuid NOT NULL
+	"carAtivo" boolean DEFAULT true NOT NULL,
+	"fk_usuario_usuID" uuid NOT NULL,
+	CONSTRAINT "carro_carPlaca_unique" UNIQUE("carPlaca")
 );
 --> statement-breakpoint
 CREATE TABLE "endereco" (
@@ -26,7 +28,7 @@ CREATE TABLE "mensagem" (
 	"menID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"menSender" varchar(100) NOT NULL,
 	"menConteudo" text NOT NULL,
-	"menData" date NOT NULL,
+	"menData" timestamp DEFAULT now() NOT NULL,
 	"fk_registro_servico_regID" uuid NOT NULL
 );
 --> statement-breakpoint
@@ -36,20 +38,28 @@ CREATE TABLE "prestador_servico" (
 	"mecEnderecoNum" integer NOT NULL,
 	"mecLogin" varchar(50) NOT NULL,
 	"mecSenha" text NOT NULL,
-	"mecAtivo" boolean NOT NULL,
+	"mecAtivo" boolean DEFAULT true NOT NULL,
+	"mecFoto" text,
+	"mecVerificado" boolean DEFAULT false,
+	"mecCodigoVerificacao" text,
+	"mecCodigoVerificacaoExpira" timestamp with time zone,
 	"fk_endereco_endCEP" varchar(9) NOT NULL,
 	CONSTRAINT "prestador_servico_mecLogin_unique" UNIQUE("mecLogin")
 );
 --> statement-breakpoint
 CREATE TABLE "registro_servico" (
 	"regID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"regCodigo" varchar(8),
+	"regNotaCliente" integer,
+	"regValor" double precision,
 	"regDescricao" text NOT NULL,
 	"regData" date NOT NULL,
 	"regHora" timestamp NOT NULL,
 	"fk_endereco_endCEP" varchar(9) NOT NULL,
 	"fk_carro_carID" uuid NOT NULL,
 	"fk_prestador_servico_mecCNPJ" varchar(14) NOT NULL,
-	"fk_tipo_servico_tseID" uuid NOT NULL
+	"fk_tipo_servico_tseID" uuid NOT NULL,
+	CONSTRAINT "registro_servico_regCodigo_unique" UNIQUE("regCodigo")
 );
 --> statement-breakpoint
 CREATE TABLE "tipo_servico" (
@@ -65,7 +75,11 @@ CREATE TABLE "usuario" (
 	"usuDataNasc" date NOT NULL,
 	"usuCpf" varchar(11) NOT NULL,
 	"usuTelefone" text,
-	"usuAtivo" boolean NOT NULL,
+	"usuAtivo" boolean DEFAULT true NOT NULL,
+	"usuFoto" text,
+	"usuVerificado" boolean DEFAULT false,
+	"usuCodigoVerificacao" text,
+	"usuCodigoVerificacaoExpira" timestamp with time zone,
 	CONSTRAINT "usuario_usuLogin_unique" UNIQUE("usuLogin"),
 	CONSTRAINT "usuario_usuCpf_unique" UNIQUE("usuCpf")
 );
