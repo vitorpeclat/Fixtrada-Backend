@@ -1,6 +1,7 @@
 import { db } from './connection.ts';
 import { fakerPT_BR as faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
+import bcrypt from 'bcrypt';
 import { carro } from './schema/carro.ts';
 import { endereco } from './schema/endereco.ts';
 import { mensagem } from './schema/mensagem.ts';
@@ -42,12 +43,22 @@ async function seed() {
     console.log('5 endereços inseridos com sucesso.');
 
     // Geração de dados de Usuário
+    // Hashear a senha padrão uma vez
+    const plainPassword = '1234A@';
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+
     for (let i = 0; i < 5; i++) {
+        const fullName = faker.person.fullName();
+        const firstName = fullName.split(' ')[0] || `user${i + 1}`;
+        // garantir unicidade do email/login adicionando índice
+        const email = `${firstName.toLowerCase()}${i + 1}@email.com`;
+
         const [insertedUsuario] = await db.insert(usuario).values({
             usuID: uuidv4(),
-            usuLogin: faker.internet.username(),
-            usuSenha: faker.internet.password(),
-            usuNome: faker.person.fullName(),
+            usuLogin: email,
+            usuSenha: hashedPassword,
+            usuNome: fullName,
             usuDataNasc: faker.date.birthdate().toISOString().split('T')[0],
             usuCpf: faker.string.numeric(11),
             usuTelefone: faker.string.numeric('119########'),
@@ -88,7 +99,7 @@ async function seed() {
             mecNota: faker.number.float({ min: 1, max: 5}),
             mecEnderecoNum: faker.number.int({ min: 100, max: 5000 }),
             mecLogin: faker.internet.username(),
-            mecSenha: faker.internet.password(),
+            mecSenha: hashedPassword,
             mecAtivo: true,
             fk_endereco_endCEP: enderecoAleatorio.endCEP,
         }).returning();
