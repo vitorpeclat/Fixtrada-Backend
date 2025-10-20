@@ -11,7 +11,6 @@ export async function updateClienteRoutes(app: FastifyInstance) {
 
   // Atualiza dados do cliente; o token vem no header e já é verificado pelo hook.
   app.post('/cliente/update', async (request, reply) => {
-    try {
       const dados = updateClienteSchema.parse(request.body);
       const { sub: usuID } = request.user as JwtUserPayload;
 
@@ -46,12 +45,5 @@ export async function updateClienteRoutes(app: FastifyInstance) {
       }
 
       return reply.status(200).send({ message: 'Cliente atualizado com sucesso.', user: updated });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
-      }
-      console.error(error);
-      return reply.status(500).send({ message: 'Erro interno no servidor.' });
-    }
   });
 }

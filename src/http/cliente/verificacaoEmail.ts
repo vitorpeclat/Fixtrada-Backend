@@ -11,7 +11,6 @@ const verificacaoEmailSchema = z.object({
 
 export async function verificacaoEmailClienteRoutes(app: FastifyInstance) {
   app.post('/cliente/verificar-email', async (request, reply) => {
-    try {
       const { email, codigo } = verificacaoEmailSchema.parse(request.body);
 
       const user = await db.query.usuario.findFirst({
@@ -39,13 +38,5 @@ export async function verificacaoEmailClienteRoutes(app: FastifyInstance) {
       }).where(eq(usuario.usuLogin, email));
 
       return reply.status(200).send({ message: 'E-mail verificado com sucesso!' });
-
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
-      }
-      console.error(error);
-      return reply.status(500).send({ message: 'Erro interno no servidor.' });
-    }
   });
 }

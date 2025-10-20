@@ -10,7 +10,6 @@ import { criarPrestadorSchema } from '../schemas/auth.ts';
 export async function cadastroPrestadorRoutes(app: FastifyInstance) {
   
   app.post('/prestador/cadastro', async (request, reply) => {
-    try {
       const dadosValidados = criarPrestadorSchema.parse(request.body);
 
       const prestadorExistente = await db.query.prestadorServico.findFirst({
@@ -42,13 +41,5 @@ export async function cadastroPrestadorRoutes(app: FastifyInstance) {
       });
 
       return reply.status(201).send({ message: 'Prestador cadastrado com sucesso!' });
-
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
-      }
-      console.error(error);
-      return reply.status(500).send({ message: 'Erro interno no servidor.' });
-    }
   });
 }

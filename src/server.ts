@@ -9,6 +9,7 @@ import { vehicleClienteRoutes } from './http/cliente/vehiclesCliente.ts';
 import { serviceClienteRoutes } from './http/cliente/serviceCliente.ts';
 import { verificacaoEmailClienteRoutes } from './http/cliente/verificacaoEmail.ts';
 import { updateClienteRoutes } from './http/cliente/updateCliente.ts';
+import { z } from 'zod';
 
 const app = Fastify({
   logger: true
@@ -33,6 +34,17 @@ app.register(serviceClienteRoutes);
 app.register(verificacaoEmailClienteRoutes);
 app.register(updateClienteRoutes)
 
+app.setErrorHandler((error, _, reply) => {
+  if (error instanceof z.ZodError) {
+    return reply
+      .status(400)
+      .send({ message: 'Validation error.', issues: error.format() })
+  }
+
+  app.log.error(error)
+
+  return reply.status(500).send({ message: 'Internal server error.' })
+})
 
 app.get('/health', function (request, reply) {
   reply.send("OK")

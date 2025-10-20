@@ -8,7 +8,6 @@ import { loginSchema } from '../schemas/auth.ts';
 
 export async function loginPrestadorRoutes(app: FastifyInstance) {
   app.post('/prestador/login', async (request, reply) => {
-    try {
       const { login, senha } = loginSchema.parse(request.body);
 
       const user = await db.query.prestadorServico.findFirst({
@@ -39,13 +38,5 @@ export async function loginPrestadorRoutes(app: FastifyInstance) {
             role: 'prestador',
         },
       });
-
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: 'Dados de login inválidos.', issues: error.format() });
-      }
-      console.error(error);
-      return reply.status(500).send({ message: 'Erro interno no servidor.' });
-    }
   });
 }

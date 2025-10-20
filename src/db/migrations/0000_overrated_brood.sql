@@ -40,12 +40,9 @@ CREATE TABLE "prestador_servico" (
 	"mecSenha" text NOT NULL,
 	"mecAtivo" boolean DEFAULT true NOT NULL,
 	"mecFoto" text,
-<<<<<<<< HEAD:src/db/migrations/0000_volatile_power_man.sql
 	"mecVerificado" boolean DEFAULT false,
 	"mecCodigoVerificacao" text,
 	"mecCodigoVerificacaoExpira" timestamp with time zone,
-========
->>>>>>>> 34d1f04b80268fd4e786954d2f6a42516be7061e:src/db/migrations/0000_overrated_brood.sql
 	"fk_endereco_endCEP" varchar(9) NOT NULL,
 	CONSTRAINT "prestador_servico_mecLogin_unique" UNIQUE("mecLogin")
 );
@@ -80,12 +77,9 @@ CREATE TABLE "usuario" (
 	"usuTelefone" text,
 	"usuAtivo" boolean DEFAULT true NOT NULL,
 	"usuFoto" text,
-<<<<<<<< HEAD:src/db/migrations/0000_volatile_power_man.sql
 	"usuVerificado" boolean DEFAULT false,
 	"usuCodigoVerificacao" text,
 	"usuCodigoVerificacaoExpira" timestamp with time zone,
-========
->>>>>>>> 34d1f04b80268fd4e786954d2f6a42516be7061e:src/db/migrations/0000_overrated_brood.sql
 	CONSTRAINT "usuario_usuLogin_unique" UNIQUE("usuLogin"),
 	CONSTRAINT "usuario_usuCpf_unique" UNIQUE("usuCpf")
 );

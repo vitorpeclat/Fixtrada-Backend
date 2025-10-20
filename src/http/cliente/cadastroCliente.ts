@@ -12,7 +12,6 @@ import nodemailer from 'nodemailer';
 export async function cadastroClienteRoutes(app: FastifyInstance) {
   
   app.post('/cliente/cadastro', async (request, reply) => {
-    try {
       const dadosValidados = criarClienteSchema.parse(request.body);
 
       const clienteExistente = await db.query.usuario.findFirst({
@@ -46,7 +45,7 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
 
         const mail = await getMailClient();
         const message = await mail.sendMail({
-            from: 'Fixtrada <nao-responda@fixtrada.com>',
+            from: 'Fixtrada <ppedro2510@gmail.com>',
             to: dadosValidados.usuLogin,
             subject: 'Código de Verificação de E-mail',
             text: `Seu código de verificação é: ${codigoVerificacao}`,
@@ -55,13 +54,5 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
         console.log('URL do E-mail de Teste: ', nodemailer.getTestMessageUrl(message));
 
       return reply.status(201).send({ message: 'Cliente cadastrado com sucesso! Um código de verificação foi enviado para o seu e-mail.'});
-
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
-      }
-      console.error(error);
-      return reply.status(500).send({ message: 'Erro interno no servidor.' });
-    }
   });
 }

@@ -15,7 +15,6 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
 
     // Registro de novas solicitações de serviço (RF007)
     app.post('/services', async (request, reply) => {
-        try {
             const dadosValidados = createServiceRequestSchema.parse(request.body);
 
             // Buscar o endereço do prestador para registrar no serviço
@@ -39,13 +38,5 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             });
 
             return reply.status(201).send(newService);
-
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
-            }
-            console.error(error);
-            return reply.status(500).send({ message: 'Erro interno no servidor.' });
-        }
     });
 }

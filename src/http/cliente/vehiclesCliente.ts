@@ -11,7 +11,6 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
 
     // Criar novo veículo
     app.post('/vehicle', async (request, reply) => {
-        try {
             const { sub: userId } = request.user as JwtUserPayload;
             const dadosValidados = vehicleSchema.parse(request.body);
             const [newVehicle] = await db.insert(carro).values({
@@ -20,14 +19,6 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
             }).returning();
 
             return reply.status(201).send(newVehicle);
-
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                return reply.status(400).send({ message: 'Dados inválidos.', issues: error.format() });
-            }
-            console.error(error);
-            return reply.status(500).send({ message: 'Erro interno no servidor.' });
-        }
     });
 
     // Listar veículos do cliente
