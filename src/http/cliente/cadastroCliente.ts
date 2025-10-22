@@ -8,6 +8,7 @@ import { criarClienteSchema } from '../schemas/auth.ts';
 import { customAlphabet } from 'nanoid';
 import { getMailClient } from '../../lib/mail.ts';
 import nodemailer from 'nodemailer';
+import { env } from '../../env.ts';
 
 export async function cadastroClienteRoutes(app: FastifyInstance) {
   
@@ -39,13 +40,15 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
           ...dadosValidados,
           usuSenha: senhaHash,
           usuAtivo: true,
+          usuCodigoVerificacao: codigoVerificacao,
+          usuCodigoVerificacaoExpira: usuCodigoVerificacaoExpira,
       }).returning({
           usuID: usuario.usuID,
       });
 
         const mail = await getMailClient();
         const message = await mail.sendMail({
-            from: 'Fixtrada <ppedro2510@gmail.com>',
+            from: `Fixtrada <${env.BREVO_SMTP_USER}>`,
             to: dadosValidados.usuLogin,
             subject: 'Código de Verificação de E-mail',
             text: `Seu código de verificação é: ${codigoVerificacao}`,

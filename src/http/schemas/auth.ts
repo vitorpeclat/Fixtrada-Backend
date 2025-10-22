@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 export const criarClienteSchema = z.object({
   usuLogin: z.string().email('Formato de e-mail inválido.'),
-  usuSenha: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.'),
+  usuSenha: z.string()
+    .min(8, 'A senha deve ter no mínimo 8 caracteres.')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'A senha deve conter pelo menos uma letra minúscula, uma maiúscula, um número e um caractere especial.'),
   usuNome: z.string().min(3, 'O nome é obrigatório.'),
   usuDataNasc: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de data inválido (AAAA-MM-DD).'),
   usuCpf: z.string().length(11, 'O CPF deve ter 11 dígitos.'),
