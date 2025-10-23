@@ -6,6 +6,7 @@ import { authHook, JwtUserPayload } from '../hooks/auth.ts';
 import { customAlphabet } from 'nanoid';
 import { createServiceRequestSchema } from '../schemas/service.ts';
 import { eq } from 'drizzle-orm';
+import { emitNewServiceNotification } from '../../ws/socketHandler.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 
 const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
@@ -35,7 +36,19 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             }).returning({
                 id: registroServico.regID,
                 code: registroServico.regCodigo,
+                description: registroServico.regDescricao,
+                prestadorCnpj: registroServico.fk_prestador_servico_mecCNPJ,
             });
+
+            if (app.io) {
+              emitNewServiceNotification(app.io, newService.prestadorCnpj, {
+                  id: newService.id,
+                  code: newService.code,
+                  description: newService.description,
+              });
+            } else {
+              console.error("Instância do Socket.IO não encontrada para emitir notificação.");
+            }
 
             return reply.status(201).send(newService);
     });

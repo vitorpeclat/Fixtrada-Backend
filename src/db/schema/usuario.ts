@@ -14,4 +14,6 @@ export const usuario = pgTable('usuario', {
   usuVerificado: boolean('usuVerificado').default(false),
   usuCodigoVerificacao: text('usuCodigoVerificacao'),
   usuCodigoVerificacaoExpira: timestamp('usuCodigoVerificacaoExpira', { withTimezone: true }),
+  codigoResetSenha: text('codigoResetSenha'),
+  codigoResetSenhaExpira: timestamp('codigoResetSenhaExpira', { withTimezone: true }),
 });

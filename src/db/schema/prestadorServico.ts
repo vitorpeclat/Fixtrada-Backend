@@ -13,5 +13,9 @@ export const prestadorServico = pgTable('prestador_servico', {
   mecVerificado: boolean('mecVerificado').default(false),
   mecCodigoVerificacao: text('mecCodigoVerificacao'),
   mecCodigoVerificacaoExpira: timestamp('mecCodigoVerificacaoExpira', { withTimezone: true }),
+  codigoResetSenha: text('codigoResetSenha'),
+  codigoResetSenhaExpira: timestamp('codigoResetSenhaExpira', { withTimezone: true }),
+  latitude: doublePrecision('latitude'),
+  longitude: doublePrecision('longitude'),
   fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 9 }).notNull().references(() => endereco.endCEP),
 });
