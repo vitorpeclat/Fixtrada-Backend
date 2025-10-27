@@ -45,7 +45,7 @@ export async function solicitarResetSenhaRoutes(app: FastifyInstance) {
       // Enviar e-mail
       const mail = await getMailClient();
       const message = await mail.sendMail({
-        from: `Fixtrada <${env.BREVO_SMTP_USER}>`,
+        from: `Fixtrada <${env.email}>`,
         to: email,
         subject: 'Recuperação de Senha Fixtrada',
         text: `Seu código para redefinir a senha é: ${codigoReset}. Este código expira em 15 minutos.`,

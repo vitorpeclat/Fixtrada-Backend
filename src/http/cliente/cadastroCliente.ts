@@ -48,7 +48,7 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
 
         const mail = await getMailClient();
         const message = await mail.sendMail({
-            from: `Fixtrada <${env.BREVO_SMTP_USER}>`,
+            from: `Fixtrada <${env.email}>`,
             to: dadosValidados.usuLogin,
             subject: 'Código de Verificação de E-mail',
             text: `Seu código de verificação é: ${codigoVerificacao}`,

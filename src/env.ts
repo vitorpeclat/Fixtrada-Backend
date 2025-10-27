@@ -9,6 +9,8 @@ const envSchema = z.object({
   BREVO_SMTP_PORT: z.coerce.number(),
   BREVO_SMTP_USER: z.string().email(),
   BREVO_SMTP_PASSWORD: z.string(),
+
+  email: z.string().email(),
 })
 
 export const env = envSchema.parse(process.env)
