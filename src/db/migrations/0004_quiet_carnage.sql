@@ -1,0 +1,1 @@
+ALTER TABLE "registro_servico" ADD COLUMN "regStatus" varchar(20) DEFAULT 'pendente' NOT NULL;

@@ -29,6 +29,27 @@
       "when": 1761574730612,
       "tag": "0003_colossal_newton_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1761681533270,
+      "tag": "0004_quiet_carnage",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1761681663389,
+      "tag": "0005_abandoned_alex_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1761681723154,
+      "tag": "0006_panoramic_centennial",
+      "breakpoints": true
     }
   ]
 }

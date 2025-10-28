@@ -1,0 +1,1 @@
+ALTER TABLE "registro_servico" ADD COLUMN "regComentarioCliente" text;
