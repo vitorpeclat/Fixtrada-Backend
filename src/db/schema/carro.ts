@@ -15,5 +15,6 @@ export const carro = pgTable('carro', {
   carOpTrocaPneu: date('carOpTrocaPneu'),
   carOpRevisao: varchar('carOpRevisao', { length: 255 }),
   carAtivo: boolean('carAtivo').notNull().default(true),
+  carFavorito: boolean('carFavorito').notNull().default(false),
   fk_usuario_usuID: uuid('fk_usuario_usuID').notNull().references(() => usuario.usuID),
 });

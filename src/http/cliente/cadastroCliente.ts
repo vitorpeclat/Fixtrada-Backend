@@ -44,18 +44,37 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
           usuCodigoVerificacaoExpira: usuCodigoVerificacaoExpira,
       }).returning({
           usuID: usuario.usuID,
+          usuLogin: usuario.usuLogin,
+          usuNome: usuario.usuNome,
+          usuTelefone: usuario.usuTelefone,
+          usuDataNasc: usuario.usuDataNasc,
       });
+      const token = await reply.jwtSign(
+        {
+          sub: newUser.usuID,
+          role: 'cliente'
+        }
+      );
 
-        const mail = await getMailClient();
-        const message = await mail.sendMail({
-            from: `Fixtrada <${env.email}>`,
-            to: dadosValidados.usuLogin,
-            subject: 'Código de Verificação de E-mail',
-            text: `Seu código de verificação é: ${codigoVerificacao}`,
-        });
-
-        console.log('URL do E-mail de Teste: ', nodemailer.getTestMessageUrl(message));
-
-      return reply.status(201).send({ message: 'Cliente cadastrado com sucesso! Um código de verificação foi enviado para o seu e-mail.'});
+      const mail = await getMailClient();
+      const message = await mail.sendMail({
+          from: `Fixtrada <${env.email}>`,
+          to: dadosValidados.usuLogin,
+          subject: 'Código de Verificação de E-mail',
+          text: `Seu código de verificação é: ${codigoVerificacao}`,
+      });
+      
+      return reply.status(201).send({
+        message: 'Cliente cadastrado com sucesso! Um código de verificação foi enviado para o seu e-mail.',
+        token,
+        user: {
+            id: newUser.usuID,
+            email: newUser.usuLogin,
+            nome: newUser.usuNome,
+            role: 'cliente',
+            telefone: newUser.usuTelefone,
+            dataNascimento: newUser.usuDataNasc,
+        },
+      });
   });
 }

@@ -8,12 +8,12 @@ import { loginSchema } from '../schemas/auth.ts';
 
 export async function loginClienteRoutes(app: FastifyInstance) {
   app.post('/cliente/login', async (request, reply) => {
+    try {
       const { login, senha } = loginSchema.parse(request.body);
-
       const user = await db.query.usuario.findFirst({
         where: eq(usuario.usuLogin, login),
       });
-
+      
       if (!user || !user.usuAtivo) {
         return reply.status(401).send({ message: 'Credenciais inválidas.' });
       }
@@ -41,5 +41,12 @@ export async function loginClienteRoutes(app: FastifyInstance) {
             dataNascimento: user.usuDataNasc,
         },
       });
+
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({ message: 'Dados de login inválidos.', issues: error.format() });
+      }
+      return reply.status(500).send({ message: 'Erro interno no servidor.' });
+    }
   });
 }

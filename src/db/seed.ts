@@ -44,8 +44,8 @@ async function seed() {
 
     // Geração de dados de Usuário
     // Hashear a senha padrão uma vez
-    const plainPassword = '1234A@';
-    const saltRounds = 10;
+    const plainPassword = '12345aA@';
+    const saltRounds = 8;
     const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
 
     for (let i = 0; i < 5; i++) {
