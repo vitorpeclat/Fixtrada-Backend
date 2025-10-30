@@ -17,9 +17,17 @@ import { vehicleClienteRoutes } from './http/cliente/vehiclesCliente.ts';
 import { serviceClienteRoutes } from './http/cliente/serviceCliente.ts';
 import { verificacaoEmailClienteRoutes } from './http/cliente/verificacaoEmail.ts';
 import { updateClienteRoutes } from './http/cliente/updateCliente.ts';
+import { historicoClienteRoutes } from './http/cliente/historicoCliente.ts';
+import { avaliarServicoRoutes } from './http/cliente/avaliarServico.ts';
 import { solicitarResetSenhaRoutes } from './http/auth/solicitarResetSenha.ts'; // Exemplo
 import { confirmarResetSenhaRoutes } from './http/auth/confirmarResetSenha.ts'; // Exemplo
 import { updatePrestadorRoutes } from './http/prestador/updatePrestador.ts'; // Exemplo
+import { servicosPrestadorRoutes } from './http/prestador/servicosPrestador.ts';
+import { historicoPrestadorRoutes } from './http/prestador/historicoPrestador.ts';
+import { loginAdminRoutes } from './http/administrador/loginAdmin.ts';
+import { contasAdminRoutes } from './http/administrador/contasAdmin.ts';
+import { tiposServicoAdminRoutes } from './http/administrador/tiposServicoAdmin.ts';
+import { outrosAdminRoutes } from './http/administrador/outrosAdmin.ts';
 import { findNearbyPrestadoresRoutes } from './http/services/findNearbyPrestadores.ts'; // Exemplo
 // --- Fim das importações de rotas ---
 import { z } from 'zod';
@@ -52,10 +60,18 @@ app.register(vehicleClienteRoutes);
 app.register(serviceClienteRoutes);
 app.register(verificacaoEmailClienteRoutes);
 app.register(updateClienteRoutes);
+app.register(historicoClienteRoutes);
+app.register(avaliarServicoRoutes);
 // Registre as rotas pendentes implementadas
 app.register(solicitarResetSenhaRoutes);
 app.register(confirmarResetSenhaRoutes);
 app.register(updatePrestadorRoutes);
+app.register(servicosPrestadorRoutes);
+app.register(historicoPrestadorRoutes);
+app.register(loginAdminRoutes);
+app.register(contasAdminRoutes);
+app.register(tiposServicoAdminRoutes);
+app.register(outrosAdminRoutes);
 app.register(findNearbyPrestadoresRoutes);
 
 
