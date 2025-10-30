@@ -6,6 +6,7 @@ import fastifyIO from 'fastify-socket.io'; // <<< Importar o plugin
 // Remova: import websocketPlugin from '@fastify/websocket';
 // Remova: import { Server } from 'socket.io'; // O tipo pode vir de fastify.d.ts agora
 import { env } from './env.ts';
+import { networkInterfaces } from 'os';
 import { setupSocketIO } from './ws/socketHandler.ts';
 // --- Importe TODAS as suas rotas HTTP aqui ---
 import { cadastroClienteRoutes } from './http/cliente/cadastroCliente.ts';
@@ -104,6 +105,19 @@ app.listen({ port: env.PORT, host: '0.0.0.0' }, function (err, address) {
     app.log.error(err);
     process.exit(1);
   }
-  // O logger padrão do Fastify geralmente já loga esta informação.
-  // console.log(`Server listening at ${address}`);
+  console.log(`Server listening at ${address}`);
+  const interfaces = networkInterfaces();
+  if (interfaces) {
+    console.log('Available on (listening on 0.0.0.0):');
+    for (const name of Object.keys(interfaces)) {
+        const nets = interfaces[name];
+        if (nets) {
+            for (const net of nets) {
+                if (net.family === 'IPv4' && !net.internal) {
+                    console.log(`- http://${net.address}:${env.PORT}`);
+                }
+            }
+        }
+    }
+  }
 });
