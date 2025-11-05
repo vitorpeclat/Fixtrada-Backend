@@ -12,6 +12,7 @@ CREATE TABLE "carro" (
 	"carOpTrocaPneu" date,
 	"carOpRevisao" varchar(255),
 	"carAtivo" boolean DEFAULT true NOT NULL,
+	"carFavorito" boolean DEFAULT false NOT NULL,
 	"fk_usuario_usuID" uuid NOT NULL,
 	CONSTRAINT "carro_carPlaca_unique" UNIQUE("carPlaca")
 );
@@ -43,6 +44,10 @@ CREATE TABLE "prestador_servico" (
 	"mecVerificado" boolean DEFAULT false,
 	"mecCodigoVerificacao" text,
 	"mecCodigoVerificacaoExpira" timestamp with time zone,
+	"codigoResetSenha" text,
+	"codigoResetSenhaExpira" timestamp with time zone,
+	"latitude" double precision,
+	"longitude" double precision,
 	"fk_endereco_endCEP" varchar(9) NOT NULL,
 	CONSTRAINT "prestador_servico_mecLogin_unique" UNIQUE("mecLogin")
 );
@@ -51,7 +56,9 @@ CREATE TABLE "registro_servico" (
 	"regID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"regCodigo" varchar(8),
 	"regNotaCliente" integer,
+	"regComentarioCliente" text,
 	"regValor" double precision,
+	"regStatus" varchar(20) DEFAULT 'pendente' NOT NULL,
 	"regDescricao" text NOT NULL,
 	"regData" date NOT NULL,
 	"regHora" timestamp NOT NULL,
@@ -76,10 +83,13 @@ CREATE TABLE "usuario" (
 	"usuCpf" varchar(11) NOT NULL,
 	"usuTelefone" text,
 	"usuAtivo" boolean DEFAULT true NOT NULL,
+	"usuRole" varchar(10) DEFAULT 'cliente' NOT NULL,
 	"usuFoto" text,
 	"usuVerificado" boolean DEFAULT false,
 	"usuCodigoVerificacao" text,
 	"usuCodigoVerificacaoExpira" timestamp with time zone,
+	"codigoResetSenha" text,
+	"codigoResetSenhaExpira" timestamp with time zone,
 	CONSTRAINT "usuario_usuLogin_unique" UNIQUE("usuLogin"),
 	CONSTRAINT "usuario_usuCpf_unique" UNIQUE("usuCpf")
 );

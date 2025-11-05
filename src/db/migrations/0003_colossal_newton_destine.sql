@@ -1,1 +1,0 @@
-ALTER TABLE "carro" ADD COLUMN "carFavorito" boolean DEFAULT false NOT NULL;

@@ -5,50 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1760317332328,
-      "tag": "0000_volatile_power_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1761255951274,
-      "tag": "0001_windy_namorita",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1761256066297,
-      "tag": "0002_confused_slipstream",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1761574730612,
-      "tag": "0003_colossal_newton_destine",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1761681533270,
-      "tag": "0004_quiet_carnage",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1761681663389,
-      "tag": "0005_abandoned_alex_power",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1761681723154,
-      "tag": "0006_panoramic_centennial",
+      "when": 1762380893976,
+      "tag": "0000_typical_retro_girl",
       "breakpoints": true
     }
   ]

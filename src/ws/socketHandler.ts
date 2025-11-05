@@ -2,9 +2,8 @@ import { Server, Socket } from 'socket.io';
 import { db } from '../db/connection.ts';
 import { mensagem } from '../db/schema/mensagem.ts';
 import { eq } from 'drizzle-orm';
-// Importe JWT ou seu método de verificação de token, se necessário para autenticar sockets
-// import jwt from 'jsonwebtoken';
-// import { env } from '../env.ts';
+import jwt from 'jsonwebtoken';
+import { env } from '../env.ts';
 
 interface UserSocket extends Socket {
     userId?: string; // ID do usuário (usuID ou mecCNPJ)
@@ -17,20 +16,20 @@ const onlineUsers = new Map<string, string>(); // userId -> socket.id
 export function setupSocketIO(io: Server) {
 
   // Middleware de autenticação (opcional, mas recomendado)
-  // io.use((socket: UserSocket, next) => {
-  //   const token = socket.handshake.auth.token;
-  //   if (!token) {
-  //     return next(new Error('Authentication error: Token missing'));
-  //   }
-  //   try {
-  //     const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string, role: 'cliente' | 'prestador' };
-  //     socket.userId = payload.sub;
-  //     socket.userRole = payload.role;
-  //     next();
-  //   } catch (err) {
-  //     next(new Error('Authentication error: Invalid token'));
-  //   }
-  // });
+  io.use((socket: UserSocket, next) => {
+     const token = socket.handshake.auth.token;
+     if (!token) {
+       return next(new Error('Authentication error: Token missing'));
+     }
+     try {
+       const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string, role: 'cliente' | 'prestador' };
+       socket.userId = payload.sub;
+       socket.userRole = payload.role;
+       next();
+     } catch (err) {
+       next(new Error('Authentication error: Invalid token'));
+     }
+  });
 
 
   io.on('connection', (socket: UserSocket) => {
