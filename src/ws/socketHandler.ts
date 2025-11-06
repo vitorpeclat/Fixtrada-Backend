@@ -70,6 +70,7 @@ export function setupSocketIO(io: Server) {
         const [newMessage] = await db.insert(mensagem).values({
           fk_registro_servico_regID: serviceId, // Certifique-se que serviceId é o UUID (regID)
           menSender: senderName, // Ou pode usar o ID e buscar o nome
+          menSenderId: senderId, // Adiciona o ID do remetente
           menConteudo: content,
           // menData é defaultNow()
         }).returning();
@@ -117,11 +118,22 @@ export function setupSocketIO(io: Server) {
 // Função para carregar histórico do chat
 async function loadAndEmitHistory(socket: Socket, serviceId: string) {
     try {
-        const history = await db.query.mensagem.findMany({
+        const historyDb = await db.query.mensagem.findMany({
             where: eq(mensagem.fk_registro_servico_regID, serviceId),
             orderBy: (fields, { asc }) => [asc(fields.menData)],
              // Adicione um limit se necessário
         });
+
+        const history = historyDb.map(msg => ({
+            menID: msg.menID,
+            serviceId: serviceId,
+            senderName: msg.menSender,
+            senderId: msg.menSenderId, // Garante que o senderId seja enviado
+            content: msg.menConteudo,
+            menData: msg.menData,
+        }));
+
+
         socket.emit('chat_history', { serviceId, history });
     } catch (error) {
         console.error(`Erro ao carregar histórico do chat ${serviceId}:`, error);
