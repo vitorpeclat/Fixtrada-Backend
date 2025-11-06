@@ -1,6 +1,7 @@
 import { Server, Socket } from 'socket.io';
 import { db } from '../db/connection.ts';
 import { mensagem } from '../db/schema/mensagem.ts';
+import { usuario } from '../db/schema/usuario.ts';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import { env } from '../env.ts';
@@ -57,21 +58,35 @@ export function setupSocketIO(io: Server) {
     });
 
     // Receber mensagem e retransmitir + salvar no DB
-    socket.on('send_message', async (data: { serviceId: string, senderId: string, senderName: string, content: string }) => {
+    socket.on('send_message', async (data: { serviceId: string, senderId: string, senderName?: string, content: string }) => {
        if (!socket.userId || socket.userId !== data.senderId) {
             console.error("Tentativa de enviar mensagem por usuário não autorizado ou não correspondente.");
             return; // Ignora se o senderId não bate com o socket autenticado
        }
 
-      const { serviceId, senderId, senderName, content } = data;
+      const { serviceId, senderId, content } = data;
+      let senderName = data.senderName;
 
       try {
+        if (!senderName) {
+          const user = await db.query.usuario.findFirst({
+            where: eq(usuario.usuID, senderId),
+          });
+          if (user) {
+            senderName = user.usuNome;
+          } else {
+            console.warn(`Sender name not provided and user not found for senderId: ${senderId}. Using 'Desconhecido'.`);
+            senderName = "Desconhecido";
+          }
+        }
+
         // 1. Salvar mensagem no banco
         const [newMessage] = await db.insert(mensagem).values({
-          menSender: senderName,
-          menSenderId: senderId,
+          fk_registro_servico_regID: serviceId, // Certifique-se que serviceId é o UUID (regID)
+          menSender: senderName, // Ou pode usar o ID e buscar o nome
+          menSenderId: senderId, // Adiciona o ID do remetente
           menConteudo: content,
-          fk_registro_servico_regID: serviceId,
+          // menData é defaultNow()
         }).returning();
 
         // 2. Emitir mensagem para todos na sala do serviço (incluindo o remetente)
