@@ -13,7 +13,6 @@ export const registroServico = pgTable('registro_servico', {
   regComentarioCliente: text('regComentarioCliente'), // Comentário do cliente sobre o serviço
   regValor: doublePrecision('regValor'), // Valor do serviço ou visita
   regStatus: varchar('regStatus', { length: 20 }).notNull().default('pendente'), // pendente, aceito, recusado, em_andamento, concluído, cancelado
-  
   regDescricao: text('regDescricao').notNull(),
   regData: date('regData').notNull(),
   regHora: timestamp('regHora').notNull(),

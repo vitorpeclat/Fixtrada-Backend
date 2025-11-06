@@ -2,6 +2,7 @@ import { db } from './connection.ts';
 import { fakerPT_BR as faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
+import { customAlphabet } from 'nanoid';
 import { carro } from './schema/carro.ts';
 import { endereco } from './schema/endereco.ts';
 import { mensagem } from './schema/mensagem.ts';
@@ -9,6 +10,8 @@ import { prestadorServico } from './schema/prestadorServico.ts';
 import { registroServico } from './schema/registroServico.ts';
 import { tipoServico } from './schema/tipoServico.ts';
 import { usuario } from './schema/usuario.ts';
+
+const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 
 async function seed() {
     console.log('Iniciando o processo de seed...');
@@ -126,6 +129,7 @@ async function seed() {
         
         const [insertedRegistro] = await db.insert(registroServico).values({
             regID: uuidv4(),
+            regCodigo: nanoid(), // Gera código único de 8 caracteres
             regDescricao: faker.lorem.sentence(),
             regData: faker.date.past({ years: 1 }).toISOString().split('T')[0],
             regHora: faker.date.recent(),
