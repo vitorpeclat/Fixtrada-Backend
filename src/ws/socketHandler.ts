@@ -68,11 +68,10 @@ export function setupSocketIO(io: Server) {
       try {
         // 1. Salvar mensagem no banco
         const [newMessage] = await db.insert(mensagem).values({
-          fk_registro_servico_regID: serviceId, // Certifique-se que serviceId é o UUID (regID)
-          menSender: senderName, // Ou pode usar o ID e buscar o nome
-          menSenderId: senderId, // Adiciona o ID do remetente
+          menSender: senderName,
+          menSenderId: senderId,
           menConteudo: content,
-          // menData é defaultNow()
+          fk_registro_servico_regID: serviceId,
         }).returning();
 
         // 2. Emitir mensagem para todos na sala do serviço (incluindo o remetente)
