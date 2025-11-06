@@ -29,6 +29,7 @@ import { contasAdminRoutes } from './http/administrador/contasAdmin.ts';
 import { tiposServicoAdminRoutes } from './http/administrador/tiposServicoAdmin.ts';
 import { outrosAdminRoutes } from './http/administrador/outrosAdmin.ts';
 import { findNearbyPrestadoresRoutes } from './http/services/findNearbyPrestadores.ts'; // Exemplo
+import { meusChatsRoutes } from './http/chats.ts';
 // --- Fim das importações de rotas ---
 import { z } from 'zod';
 
@@ -73,6 +74,7 @@ app.register(contasAdminRoutes);
 app.register(tiposServicoAdminRoutes);
 app.register(outrosAdminRoutes);
 app.register(findNearbyPrestadoresRoutes);
+app.register(meusChatsRoutes);
 
 
 // Handler de erro (Zod e geral)

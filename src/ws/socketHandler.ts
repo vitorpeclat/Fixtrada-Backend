@@ -17,19 +17,21 @@ export function setupSocketIO(io: Server) {
 
   // Middleware de autenticação (opcional, mas recomendado)
   io.use((socket: UserSocket, next) => {
-     const token = socket.handshake.auth.token;
-     if (!token) {
-       return next(new Error('Authentication error: Token missing'));
-     }
-     try {
-       const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string, role: 'cliente' | 'prestador' };
-       socket.userId = payload.sub;
-       socket.userRole = payload.role;
-       next();
-     } catch (err) {
-       next(new Error('Authentication error: Invalid token'));
-     }
-  });
+   const token = socket.handshake.auth.token;
+   if (!token) {
+     socket.emit('auth_error', 'Authentication error: Token missing'); // Notifica o cliente
+     return next(new Error('Authentication error: Token missing'));
+   }
+   try {
+     const payload = jwt.verify(token, env.JWT_SECRET) as { sub: string, role: 'cliente' | 'prestador' };
+     socket.userId = payload.sub;
+     socket.userRole = payload.role;
+     next();
+   } catch (err) {
+     socket.emit('auth_error', 'Authentication error: Invalid token'); // Notifica o cliente
+     next(new Error('Authentication error: Invalid token'));
+   }
+});
 
 
   io.on('connection', (socket: UserSocket) => {
