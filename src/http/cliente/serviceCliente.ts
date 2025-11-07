@@ -10,6 +10,7 @@ import { emitNewServiceNotification } from '../../ws/socketHandler.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { carro } from '../../db/schema/carro.ts';
 import { tipoServico } from '../../db/schema/tipoServico.ts';
+import { endereco } from '../../db/schema/endereco.ts';
 
 const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 
@@ -18,41 +19,84 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
 
     // Registro de novas solicitações de serviço (RF007)
     app.post('/services', async (request, reply) => {
-            const dadosValidados = createServiceRequestSchema.parse(request.body);
+        const user = request.user as JwtUserPayload;
+        if (!user || user.role !== 'cliente') {
+            return reply.status(403).send({ message: 'Acesso negado.' });
+        }
+        const dadosValidados = createServiceRequestSchema.parse(request.body);
 
-            // Buscar o endereço do prestador para registrar no serviço
-            const prestador = await db.query.prestadorServico.findFirst({
+        // Validar se o carro existe e pertence ao usuário
+        const carroExiste = await db.query.carro.findFirst({
+            where: eq(carro.carID, dadosValidados.fk_carro_carID)
+        });
+
+        if (!carroExiste) {
+            return reply.status(404).send({ message: 'Carro não encontrado.' });
+        }
+
+        if (carroExiste.fk_usuario_usuID !== user.sub) {
+            return reply.status(403).send({ message: 'Este carro não pertence a você.' });
+        }
+
+        // Validar se o tipo de serviço existe
+        const tipoServicoExiste = await db.query.tipoServico.findFirst({
+            where: eq(tipoServico.tseID, dadosValidados.fk_tipo_servico_tseID)
+        });
+
+        if (!tipoServicoExiste) {
+            return reply.status(404).send({ message: 'Tipo de serviço não encontrado.' });
+        }
+
+        // Validar se o CEP existe no banco de dados
+        const enderecoExiste = await db.query.endereco.findFirst({
+            where: eq(endereco.endCEP, dadosValidados.fk_endereco_endCEP)
+        });
+
+        if (!enderecoExiste) {
+            return reply.status(404).send({ 
+                message: 'CEP não encontrado no banco de dados. Por favor, cadastre o endereço primeiro.' 
+            });
+        }
+
+        // Se foi especificado um prestador, validar se ele existe
+        if (dadosValidados.fk_prestador_servico_mecCNPJ) {
+            const prestadorExiste = await db.query.prestadorServico.findFirst({
                 where: eq(prestadorServico.mecCNPJ, dadosValidados.fk_prestador_servico_mecCNPJ)
             });
 
-            if(!prestador) {
-                return reply.status(404).send({ message: "Prestador de serviço não encontrado." });
+            if (!prestadorExiste) {
+                return reply.status(404).send({ message: 'Prestador de serviço não encontrado.' });
             }
+        }
 
-            const [newService] = await db.insert(registroServico).values({
-                ...dadosValidados,
-                regCodigo: nanoid(), // Gera código único
-                regData: new Date().toISOString().split('T')[0],
-                regHora: new Date(),
-                fk_endereco_endCEP: prestador.fk_endereco_endCEP,
-            }).returning({
-                id: registroServico.regID,
-                code: registroServico.regCodigo,
-                description: registroServico.regDescricao,
-                prestadorCnpj: registroServico.fk_prestador_servico_mecCNPJ,
+        const [newService] = await db.insert(registroServico).values({
+            regDescricao: dadosValidados.regDescricao,
+            fk_carro_carID: dadosValidados.fk_carro_carID,
+            fk_tipo_servico_tseID: dadosValidados.fk_tipo_servico_tseID,
+            fk_endereco_endCEP: dadosValidados.fk_endereco_endCEP,
+            fk_prestador_servico_mecCNPJ: dadosValidados.fk_prestador_servico_mecCNPJ || null, // Opcional
+            regCodigo: nanoid(), // Gera código único
+            regData: new Date().toISOString().split('T')[0],
+            regHora: new Date(),
+            regStatus: 'pendente', // Inicia como pendente
+        }).returning({
+            id: registroServico.regID,
+            code: registroServico.regCodigo,
+            description: registroServico.regDescricao,
+            status: registroServico.regStatus,
+        });
+        /*
+        // Se foi especificado um prestador, notificar via WebSocket
+        if (dadosValidados.fk_prestador_servico_mecCNPJ && app.io) {
+            emitNewServiceNotification(app.io, dadosValidados.fk_prestador_servico_mecCNPJ, {
+                id: newService.id,
+                code: newService.code,
+                description: newService.description,
             });
+        }
+        */
 
-            if (app.io) {
-              emitNewServiceNotification(app.io, newService.prestadorCnpj, {
-                  id: newService.id,
-                  code: newService.code,
-                  description: newService.description,
-              });
-            } else {
-              console.error("Instância do Socket.IO não encontrada para emitir notificação.");
-            }
-
-            return reply.status(201).send(newService);
+        return reply.status(201).send(newService);
     });
 
     // Rota para resgatar os serviços solicitados pelo cliente autenticado
@@ -83,13 +127,15 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
         // Coletar todos os IDs relacionados
         const carroIdsSet = new Set(servicos.map(s => s.fk_carro_carID));
         const tipoServicoIdsSet = new Set(servicos.map(s => s.fk_tipo_servico_tseID));
-        const prestadorCnpjsSet = new Set(servicos.map(s => s.fk_prestador_servico_mecCNPJ));
+        const prestadorCnpjsSet = new Set(servicos.map(s => s.fk_prestador_servico_mecCNPJ).filter(Boolean));
 
         // Buscar dados relacionados em batch
         const [carrosRelacionados, tiposServicoRelacionados, prestadoresRelacionados] = await Promise.all([
             db.query.carro.findMany({ where: (fields, { inArray }) => inArray(fields.carID, Array.from(carroIdsSet)) }),
             db.query.tipoServico.findMany({ where: (fields, { inArray }) => inArray(fields.tseID, Array.from(tipoServicoIdsSet)) }),
-            db.query.prestadorServico.findMany({ where: (fields, { inArray }) => inArray(fields.mecCNPJ, Array.from(prestadorCnpjsSet)) })
+            prestadorCnpjsSet.size > 0 
+                ? db.query.prestadorServico.findMany({ where: (fields, { inArray }) => inArray(fields.mecCNPJ, Array.from(prestadorCnpjsSet) as string[]) })
+                : []
         ]);
 
         // Mapear para acesso rápido
@@ -110,7 +156,7 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             comentarioCliente: servico.regComentarioCliente,
             carro: carrosMap.get(servico.fk_carro_carID) || null,
             tipoServico: tiposServicoMap.get(servico.fk_tipo_servico_tseID) || null,
-            prestador: prestadoresMap.get(servico.fk_prestador_servico_mecCNPJ) || null
+            prestador: servico.fk_prestador_servico_mecCNPJ ? prestadoresMap.get(servico.fk_prestador_servico_mecCNPJ) || null : null
         }));
 
         if (cards.length > 0) {
@@ -150,7 +196,9 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
         const [carroRelacionado, tipoServicoRelacionado, prestadorRelacionado] = await Promise.all([
             db.query.carro.findFirst({ where: eq(carro.carID, servico.fk_carro_carID) }),
             db.query.tipoServico.findFirst({ where: eq(tipoServico.tseID, servico.fk_tipo_servico_tseID) }),
-            db.query.prestadorServico.findFirst({ where: eq(prestadorServico.mecCNPJ, servico.fk_prestador_servico_mecCNPJ) })
+            servico.fk_prestador_servico_mecCNPJ 
+                ? db.query.prestadorServico.findFirst({ where: eq(prestadorServico.mecCNPJ, servico.fk_prestador_servico_mecCNPJ) })
+                : Promise.resolve(null)
         ]);
 
         // Montar card do serviço
