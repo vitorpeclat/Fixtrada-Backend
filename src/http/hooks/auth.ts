@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 
 export interface JwtUserPayload {
   sub: string;
-  role: 'cliente' | 'prestador';
+  role: 'cliente' | 'prestador' | 'admin';
 }
 
 export async function authHook(request: FastifyRequest, reply: FastifyReply) {

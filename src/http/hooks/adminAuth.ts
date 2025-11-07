@@ -6,7 +6,7 @@ export async function adminAuthHook(request: FastifyRequest, reply: FastifyReply
     const payload = await request.jwtVerify<JwtUserPayload>();
     request.user = payload;
 
-    if (request.user.role !== 'admin') {
+    if ((request.user as JwtUserPayload).role !== 'admin') {
         return reply.status(403).send({ message: 'Acesso negado. Rota exclusiva para administradores.' });
     }
 

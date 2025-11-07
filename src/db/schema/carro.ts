@@ -1,5 +1,6 @@
 import { boolean, date, integer, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
 import { usuario } from "./usuario.ts";
+import { relations } from "drizzle-orm";
 
 export const carro = pgTable('carro', {
   carID: uuid('carID').primaryKey().defaultRandom(),
@@ -18,3 +19,10 @@ export const carro = pgTable('carro', {
   carFavorito: boolean('carFavorito').notNull().default(false),
   fk_usuario_usuID: uuid('fk_usuario_usuID').notNull().references(() => usuario.usuID),
 });
+
+export const carroRelations = relations(carro, ({ one }) => ({
+  usuario: one(usuario, {
+    fields: [carro.fk_usuario_usuID],
+    references: [usuario.usuID],
+  }),
+}));

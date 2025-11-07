@@ -5,6 +5,8 @@ import { usuario } from '../db/schema/usuario.ts';
 import { eq } from 'drizzle-orm';
 import jwt from 'jsonwebtoken';
 import { env } from '../env.ts';
+import { registroServico } from '../db/schema/registroServico.ts';
+import { carro } from '../db/schema/carro.ts';
 
 interface UserSocket extends Socket {
     userId?: string; // ID do usuário (usuID ou mecCNPJ)
@@ -99,6 +101,36 @@ export function setupSocketIO(io: Server) {
             menData: newMessage.menData,
         });
          console.log(`Mensagem enviada no chat ${serviceId} por ${senderName}`);
+
+        // 3. Notificar ambos os usuários (remetente e destinatário) para atualizarem suas listas de chat
+        const service = await db.query.registroServico.findFirst({
+            where: eq(registroServico.regID, serviceId),
+            columns: {
+                fk_carro_carID: true,
+                fk_prestador_servico_mecCNPJ: true
+            }
+        });
+
+        if (service) {
+            const car = await db.query.carro.findFirst({
+                where: eq(carro.carID, service.fk_carro_carID),
+                columns: {
+                    fk_usuario_usuID: true
+                }
+            });
+
+            if (car) {
+                const clienteId = car.fk_usuario_usuID;
+                const prestadorId = service.fk_prestador_servico_mecCNPJ;
+
+                // Garante que ambos os IDs existam antes de emitir
+                if (clienteId && prestadorId) {
+                    // Emite para o remetente e para o destinatário
+                    io.to(clienteId).to(prestadorId).emit('new_chat_activity');
+                    console.log(`Evento new_chat_activity emitido para ${clienteId} e ${prestadorId}`);
+                }
+            }
+        }
 
       } catch (error) {
         console.error(`Erro ao salvar/emitir mensagem para serviço ${serviceId}:`, error);

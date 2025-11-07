@@ -15,16 +15,18 @@ export async function meusChatsRoutes(app: FastifyInstance) {
     app.get('/cliente/meus-chats', async (request, reply) => {
         const { sub: userId, role } = request.user as JwtUserPayload;
 
-        // Subquery to get the last message for each service
-        const sq = db
-            .select({
+        // Otimização: Usar DISTINCT ON para pegar a última mensagem de cada conversa
+        const lastMessageSubquery = db.$with('last_message_subquery').as(
+            db.select({
                 serviceId: mensagem.fk_registro_servico_regID,
-                lastMessage: sql<string>`(array_agg(${mensagem.menConteudo} ORDER BY ${mensagem.menData} DESC))[1]`.as('lastMessage'),
-                lastMessageDate: sql<string>`max(${mensagem.menData})`.as('lastMessageDate'),
-            })
-            .from(mensagem)
-            .groupBy(mensagem.fk_registro_servico_regID)
-            .as('sq');
+                lastMessage: mensagem.menConteudo,
+                lastMessageDate: mensagem.menData,
+                row_number: sql<number>`ROW_NUMBER() OVER (PARTITION BY ${mensagem.fk_registro_servico_regID} ORDER BY ${mensagem.menData} DESC)`.as('row_number')
+            }).from(mensagem)
+        );
+
+        const sq = db.with(lastMessageSubquery).select().from(lastMessageSubquery).where(eq(lastMessageSubquery.row_number, 1)).as('sq');
+
 
         let services;
 
@@ -41,7 +43,7 @@ export async function meusChatsRoutes(app: FastifyInstance) {
 
             services = await db.select({
                 id: registroServico.regID,
-                shopName: prestadorServico.mecLogin, // Using mecLogin as mecNomeFantasia is not in the schema
+                shopName: prestadorServico.mecLogin,
                 lastMessage: sq.lastMessage,
             })
             .from(registroServico)
@@ -56,7 +58,7 @@ export async function meusChatsRoutes(app: FastifyInstance) {
         } else if (role === 'prestador') {
             services = await db.select({
                 id: registroServico.regID,
-                shopName: usuario.usuNome, // For provider, shopName is the client's name
+                shopName: usuario.usuNome,
                 lastMessage: sq.lastMessage,
             })
             .from(registroServico)

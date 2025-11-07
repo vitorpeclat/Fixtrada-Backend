@@ -1,5 +1,5 @@
 import { date, pgTable, text, timestamp, uuid, varchar, integer, doublePrecision } from "drizzle-orm/pg-core";
-
+import { relations } from "drizzle-orm";
 import { endereco } from "./endereco.ts";
 import { carro } from "./carro.ts";
 import { tipoServico } from "./tipoServico.ts";
@@ -21,3 +21,14 @@ export const registroServico = pgTable('registro_servico', {
   fk_prestador_servico_mecCNPJ: varchar('fk_prestador_servico_mecCNPJ', { length: 14 }).references(() => prestadorServico.mecCNPJ),
   fk_tipo_servico_tseID: uuid('fk_tipo_servico_tseID').notNull().references(() => tipoServico.tseID),
 });
+
+export const registroServicoRelations = relations(registroServico, ({ one }) => ({
+  carro: one(carro, {
+    fields: [registroServico.fk_carro_carID],
+    references: [carro.carID],
+  }),
+  prestadorServico: one(prestadorServico, {
+    fields: [registroServico.fk_prestador_servico_mecCNPJ],
+    references: [prestadorServico.mecCNPJ],
+  }),
+}));
