@@ -1,1 +1,0 @@
-ALTER TABLE "endereco" ALTER COLUMN "endCEP" SET DATA TYPE varchar(8);

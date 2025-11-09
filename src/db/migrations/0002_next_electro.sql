@@ -1,1 +1,0 @@
-ALTER TABLE "registro_servico" ALTER COLUMN "fk_prestador_servico_mecCNPJ" DROP NOT NULL;

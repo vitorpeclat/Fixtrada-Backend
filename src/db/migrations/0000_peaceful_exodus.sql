@@ -1,3 +1,4 @@
+CREATE TYPE "public"."remetente" AS ENUM('cliente', 'prestador');--> statement-breakpoint
 CREATE TABLE "carro" (
 	"carID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"carPlaca" varchar(7) NOT NULL,
@@ -17,8 +18,15 @@ CREATE TABLE "carro" (
 	CONSTRAINT "carro_carPlaca_unique" UNIQUE("carPlaca")
 );
 --> statement-breakpoint
+CREATE TABLE "chat" (
+	"chatID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"fk_usuario_usuID" uuid NOT NULL,
+	"fk_prestador_servico_mecCNPJ" varchar(14) NOT NULL,
+	"fk_registro_servico_regID" uuid
+);
+--> statement-breakpoint
 CREATE TABLE "endereco" (
-	"endCEP" varchar(9) PRIMARY KEY NOT NULL,
+	"endCEP" varchar(8) PRIMARY KEY NOT NULL,
 	"endRua" text NOT NULL,
 	"endBairro" text NOT NULL,
 	"endCidade" text NOT NULL,
@@ -27,10 +35,10 @@ CREATE TABLE "endereco" (
 --> statement-breakpoint
 CREATE TABLE "mensagem" (
 	"menID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"menSender" varchar(100) NOT NULL,
 	"menConteudo" text NOT NULL,
 	"menData" timestamp DEFAULT now() NOT NULL,
-	"fk_registro_servico_regID" uuid NOT NULL
+	"menRemetente" "remetente" NOT NULL,
+	"fk_chat_chatID" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "prestador_servico" (
@@ -64,7 +72,7 @@ CREATE TABLE "registro_servico" (
 	"regHora" timestamp NOT NULL,
 	"fk_endereco_endCEP" varchar(9) NOT NULL,
 	"fk_carro_carID" uuid NOT NULL,
-	"fk_prestador_servico_mecCNPJ" varchar(14) NOT NULL,
+	"fk_prestador_servico_mecCNPJ" varchar(14),
 	"fk_tipo_servico_tseID" uuid NOT NULL,
 	CONSTRAINT "registro_servico_regCodigo_unique" UNIQUE("regCodigo")
 );
@@ -95,7 +103,10 @@ CREATE TABLE "usuario" (
 );
 --> statement-breakpoint
 ALTER TABLE "carro" ADD CONSTRAINT "carro_fk_usuario_usuID_usuario_usuID_fk" FOREIGN KEY ("fk_usuario_usuID") REFERENCES "public"."usuario"("usuID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mensagem" ADD CONSTRAINT "mensagem_fk_registro_servico_regID_registro_servico_regID_fk" FOREIGN KEY ("fk_registro_servico_regID") REFERENCES "public"."registro_servico"("regID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "chat" ADD CONSTRAINT "chat_fk_usuario_usuID_usuario_usuID_fk" FOREIGN KEY ("fk_usuario_usuID") REFERENCES "public"."usuario"("usuID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "chat" ADD CONSTRAINT "chat_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk" FOREIGN KEY ("fk_prestador_servico_mecCNPJ") REFERENCES "public"."prestador_servico"("mecCNPJ") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "chat" ADD CONSTRAINT "chat_fk_registro_servico_regID_registro_servico_regID_fk" FOREIGN KEY ("fk_registro_servico_regID") REFERENCES "public"."registro_servico"("regID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "mensagem" ADD CONSTRAINT "mensagem_fk_chat_chatID_chat_chatID_fk" FOREIGN KEY ("fk_chat_chatID") REFERENCES "public"."chat"("chatID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "prestador_servico" ADD CONSTRAINT "prestador_servico_fk_endereco_endCEP_endereco_endCEP_fk" FOREIGN KEY ("fk_endereco_endCEP") REFERENCES "public"."endereco"("endCEP") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_endereco_endCEP_endereco_endCEP_fk" FOREIGN KEY ("fk_endereco_endCEP") REFERENCES "public"."endereco"("endCEP") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_carro_carID_carro_carID_fk" FOREIGN KEY ("fk_carro_carID") REFERENCES "public"."carro"("carID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

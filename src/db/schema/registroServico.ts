@@ -4,6 +4,7 @@ import { endereco } from "./endereco.ts";
 import { carro } from "./carro.ts";
 import { tipoServico } from "./tipoServico.ts";
 import { prestadorServico } from "./prestadorServico.ts";
+import { chat } from "./chat.ts"; // Importação adicionada
 
 export const registroServico = pgTable('registro_servico', {
   regID: uuid('regID').primaryKey().defaultRandom(),
@@ -22,7 +23,7 @@ export const registroServico = pgTable('registro_servico', {
   fk_tipo_servico_tseID: uuid('fk_tipo_servico_tseID').notNull().references(() => tipoServico.tseID),
 });
 
-export const registroServicoRelations = relations(registroServico, ({ one }) => ({
+export const registroServicoRelations = relations(registroServico, ({ one }) => ({ // 'many' removido se não for usado, 'one' mantido
   carro: one(carro, {
     fields: [registroServico.fk_carro_carID],
     references: [carro.carID],
@@ -30,5 +31,12 @@ export const registroServicoRelations = relations(registroServico, ({ one }) => 
   prestadorServico: one(prestadorServico, {
     fields: [registroServico.fk_prestador_servico_mecCNPJ],
     references: [prestadorServico.mecCNPJ],
+  }),
+
+  // --- RELAÇÃO NOVA (ADICIONADA) ---
+  // Assumindo que um serviço só pode ter um chat
+  chat: one(chat, {
+     fields: [registroServico.regID],
+     references: [chat.fk_registro_servico_regID]
   }),
 }));

@@ -1,5 +1,5 @@
 {
-  "id": "51009dd2-6e03-4abe-930a-5f608fb07900",
+  "id": "1791c545-a8f5-498d-b023-d0443110ff85",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -132,13 +132,91 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.chat": {
+      "name": "chat",
+      "schema": "",
+      "columns": {
+        "chatID": {
+          "name": "chatID",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "fk_usuario_usuID": {
+          "name": "fk_usuario_usuID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_prestador_servico_mecCNPJ": {
+          "name": "fk_prestador_servico_mecCNPJ",
+          "type": "varchar(14)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_registro_servico_regID": {
+          "name": "fk_registro_servico_regID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "chat_fk_usuario_usuID_usuario_usuID_fk": {
+          "name": "chat_fk_usuario_usuID_usuario_usuID_fk",
+          "tableFrom": "chat",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "fk_usuario_usuID"
+          ],
+          "columnsTo": [
+            "usuID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "chat_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk": {
+          "name": "chat_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk",
+          "tableFrom": "chat",
+          "tableTo": "prestador_servico",
+          "columnsFrom": [
+            "fk_prestador_servico_mecCNPJ"
+          ],
+          "columnsTo": [
+            "mecCNPJ"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "chat_fk_registro_servico_regID_registro_servico_regID_fk": {
+          "name": "chat_fk_registro_servico_regID_registro_servico_regID_fk",
+          "tableFrom": "chat",
+          "tableTo": "registro_servico",
+          "columnsFrom": [
+            "fk_registro_servico_regID"
+          ],
+          "columnsTo": [
+            "regID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.endereco": {
       "name": "endereco",
       "schema": "",
       "columns": {
         "endCEP": {
           "name": "endCEP",
-          "type": "varchar(9)",
+          "type": "varchar(8)",
           "primaryKey": true,
           "notNull": true
         },
@@ -186,12 +264,6 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "menSender": {
-          "name": "menSender",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
         "menConteudo": {
           "name": "menConteudo",
           "type": "text",
@@ -205,8 +277,15 @@
           "notNull": true,
           "default": "now()"
         },
-        "fk_registro_servico_regID": {
-          "name": "fk_registro_servico_regID",
+        "menRemetente": {
+          "name": "menRemetente",
+          "type": "remetente",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_chat_chatID": {
+          "name": "fk_chat_chatID",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -214,15 +293,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "mensagem_fk_registro_servico_regID_registro_servico_regID_fk": {
-          "name": "mensagem_fk_registro_servico_regID_registro_servico_regID_fk",
+        "mensagem_fk_chat_chatID_chat_chatID_fk": {
+          "name": "mensagem_fk_chat_chatID_chat_chatID_fk",
           "tableFrom": "mensagem",
-          "tableTo": "registro_servico",
+          "tableTo": "chat",
           "columnsFrom": [
-            "fk_registro_servico_regID"
+            "fk_chat_chatID"
           ],
           "columnsTo": [
-            "regID"
+            "chatID"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -437,7 +516,7 @@
           "name": "fk_prestador_servico_mecCNPJ",
           "type": "varchar(14)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "fk_tipo_servico_tseID": {
           "name": "fk_tipo_servico_tseID",
@@ -664,7 +743,16 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.remetente": {
+      "name": "remetente",
+      "schema": "public",
+      "values": [
+        "cliente",
+        "prestador"
+      ]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

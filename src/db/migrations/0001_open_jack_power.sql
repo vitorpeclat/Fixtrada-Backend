@@ -1,1 +1,0 @@
-ALTER TABLE "mensagem" ADD COLUMN "menSenderId" uuid;

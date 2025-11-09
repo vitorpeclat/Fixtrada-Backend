@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1762445364286,
-      "tag": "0000_romantic_goliath",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1762533386384,
-      "tag": "0001_open_jack_power",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1762535734607,
-      "tag": "0002_next_electro",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1762539017512,
-      "tag": "0003_bitter_skin",
+      "when": 1762647752005,
+      "tag": "0000_peaceful_exodus",
       "breakpoints": true
     }
   ]

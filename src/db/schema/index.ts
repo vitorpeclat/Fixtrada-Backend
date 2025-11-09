@@ -5,6 +5,7 @@ import { prestadorServico } from "./prestadorServico.ts";
 import { tipoServico } from "./tipoServico.ts";
 import { registroServico } from "./registroServico.ts";
 import { mensagem } from "./mensagem.ts";
+import { chat } from "./chat.ts";
 
 export const schema = {
     usuario,
@@ -14,4 +15,5 @@ export const schema = {
     tipoServico,
     registroServico,
     mensagem,
+    chat,
 };

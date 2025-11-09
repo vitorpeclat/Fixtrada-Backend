@@ -3,6 +3,7 @@ import { fakerPT_BR as faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import { customAlphabet } from 'nanoid';
+import { chat } from './schema/chat.ts';
 import { carro } from './schema/carro.ts';
 import { endereco } from './schema/endereco.ts';
 import { mensagem } from './schema/mensagem.ts';
@@ -35,7 +36,7 @@ async function seed() {
     // Geração de dados de Endereço
     for (let i = 0; i < 5; i++) {
         const [insertedEndereco] = await db.insert(endereco).values({
-            endCEP: faker.location.zipCode('#####-###'),
+            endCEP: faker.location.zipCode('########'),
             endRua: faker.location.street(),
             endBairro: faker.location.secondaryAddress(),
             endCidade: faker.location.city(),
@@ -139,17 +140,49 @@ async function seed() {
             fk_tipo_servico_tseID: tipoServicoAleatorio.tseID,
         }).returning();
         
-        // Geração de dados de Mensagem para cada registro de serviço
-        if (faker.datatype.boolean()) {
-            await db.insert(mensagem).values({
-                menID: uuidv4(),
-                menSender: faker.person.fullName(),
-                menConteudo: faker.lorem.sentence(),
-                fk_registro_servico_regID: insertedRegistro.regID,
-            });
-        }
     }
     console.log('15 registros de serviço e mensagens associadas inseridos com sucesso.');
+
+    // Geração de Chats INDEPENDENTES (sem registro de serviço)
+    console.log('Iniciando geração de chats independentes (sem serviço)...');
+    
+    for (let i = 0; i < 5; i++) { // Adiciona 5 chats independentes
+        const usuarioAleatorio = insertedUsuarios[Math.floor(Math.random() * insertedUsuarios.length)];
+        const prestadorAleatorio = insertedPrestadores[Math.floor(Math.random() * insertedPrestadores.length)];
+
+        if (!usuarioAleatorio || !prestadorAleatorio) {
+            console.warn("Usuário ou prestador aleatório não encontrado, pulando chat independente.");
+            continue;
+        }
+
+        try {
+            const [insertedChat] = await db.insert(chat).values({
+                chatID: uuidv4(),
+                fk_usuario_usuID: usuarioAleatorio.usuID,
+                fk_prestador_servico_mecCNPJ: prestadorAleatorio.mecCNPJ,
+                // fk_registro_servico_regID é omitido (será NULL)
+            }).returning();
+
+            // Gerar 1 ou 2 mensagens para este chat independente
+            await db.insert(mensagem).values([
+                {
+                    menID: uuidv4(),
+                    menConteudo: `Olá, ${prestadorAleatorio.mecLogin}, gostaria de um orçamento.`,
+                    menRemetente: 'cliente',
+                    fk_chat_chatID: insertedChat.chatID,
+                },
+                {
+                    menID: uuidv4(),
+                    menConteudo: `Claro, ${usuarioAleatorio.usuNome}. Do que precisa?`,
+                    menRemetente: 'prestador',
+                    fk_chat_chatID: insertedChat.chatID,
+                }
+            ]);
+        } catch (error) {
+            console.error("Erro ao inserir chat independente:", error);
+        }
+    }
+    console.log('5 chats independentes inseridos com sucesso.');
     
     console.log('Processo de seed finalizado com sucesso!');
 }
