@@ -19,6 +19,7 @@ async function seed() {
     
     // Limpar tabelas existentes para evitar duplicações
     await db.delete(mensagem);
+    await db.delete(chat);
     await db.delete(registroServico);
     await db.delete(carro);
     await db.delete(prestadorServico);
@@ -49,8 +50,7 @@ async function seed() {
     // Geração de dados de Usuário
     // Hashear a senha padrão uma vez
     const plainPassword = '12345aA@';
-    const saltRounds = 8;
-    const hashedPassword = await bcrypt.hash(plainPassword, saltRounds);
+    const hashedPassword = await bcrypt.hash(plainPassword, 8);
 
     for (let i = 0; i < 5; i++) {
         const fullName = faker.person.fullName();
@@ -63,7 +63,7 @@ async function seed() {
             usuLogin: email,
             usuSenha: hashedPassword,
             usuNome: fullName,
-            usuDataNasc: faker.date.birthdate().toISOString().split('T')[0],
+            usuDataNasc: faker.date.birthdate().toISOString(),
             usuCpf: faker.string.numeric(11),
             usuTelefone: faker.string.numeric('119########'),
             usuAtivo: faker.datatype.boolean(),
@@ -85,8 +85,8 @@ async function seed() {
             carKM: faker.number.int({ min: 1000, max: 200000 }),
             carTpCombust: faker.vehicle.fuel(),
             carOpTracao: faker.helpers.arrayElement(['Dianteira', 'Traseira', 'Integral']),
-            carOpTrocaOleo: faker.date.future({ years: 1 }).toISOString().split('T')[0],
-            carOpTrocaPneu: faker.date.future({ years: 2 }).toISOString().split('T')[0],
+            carOpTrocaOleo: faker.date.future({ years: 1 }).toISOString(),
+            carOpTrocaPneu: faker.date.future({ years: 2 }).toISOString(),
             carOpRevisao: faker.lorem.words(5),
             carAtivo: true,
             fk_usuario_usuID: usuarioAleatorio.usuID,
@@ -168,13 +168,13 @@ async function seed() {
                 {
                     menID: uuidv4(),
                     menConteudo: `Olá, ${prestadorAleatorio.mecLogin}, gostaria de um orçamento.`,
-                    menRemetente: 'cliente',
+                    fk_remetente_usuID: usuarioAleatorio.usuID,
                     fk_chat_chatID: insertedChat.chatID,
                 },
                 {
                     menID: uuidv4(),
                     menConteudo: `Claro, ${usuarioAleatorio.usuNome}. Do que precisa?`,
-                    menRemetente: 'prestador',
+                    fk_remetente_usuID: prestadorAleatorio.mecCNPJ,
                     fk_chat_chatID: insertedChat.chatID,
                 }
             ]);

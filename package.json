@@ -3,7 +3,10 @@
   "scripts": {
     "dev": "tsx --env-file .env --watch src/server.ts",
     "start": "tsx --env-file .env src/server.ts",
-    "seed": "tsx --env-file .env src/db/seed.ts"
+    "seed": "tsx --env-file .env src/db/seed.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file .env src/db/migrate.ts",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@fastify/jwt": "^8.0.1",

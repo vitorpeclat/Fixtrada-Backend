@@ -5,8 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1762647752005,
-      "tag": "0000_peaceful_exodus",
+      "when": 1763153072791,
+      "tag": "0000_dummy-migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1763153083159,
+      "tag": "0001_revert-dummy-migration",
       "breakpoints": true
     }
   ]

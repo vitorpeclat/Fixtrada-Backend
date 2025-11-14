@@ -18,7 +18,7 @@ export const prestadorServico = pgTable('prestador_servico', {
   codigoResetSenhaExpira: timestamp('codigoResetSenhaExpira', { withTimezone: true }),
   latitude: doublePrecision('latitude'),
   longitude: doublePrecision('longitude'),
-  fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 9 }).notNull().references(() => endereco.endCEP),
+  fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 8 }).notNull().references(() => endereco.endCEP),
 });
 
 export const prestadorServicoRelations = relations(prestadorServico, ({ one }) => ({

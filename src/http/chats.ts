@@ -8,6 +8,11 @@ import { authHook, JwtUserPayload } from './hooks/auth.ts';
 import { chat } from '../db/schema/chat.ts'; // IMPORTADO 'chat'
 import { registroServico } from '../db/schema/registroServico.ts';
 
+// Define o tipo para os parâmetros da rota de mensagens
+type GetChatMessagesParams = {
+    chatId: string;
+}
+
 export async function meusChatsRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
 
@@ -76,5 +81,61 @@ export async function meusChatsRoutes(app: FastifyInstance) {
         }
 
         return reply.send(services);
+    });
+
+    app.get<{ Params: GetChatMessagesParams }>('/chats/:chatId/messages', async (request, reply) => {
+        const { sub: userId, role } = request.user as JwtUserPayload;
+        const { chatId } = request.params;
+
+        // 1. Validação: Buscar o chat e verificar se o usuário logado pertence a ele.
+        const chatDetails = await db.query.chat.findFirst({
+            where: eq(chat.chatID, chatId),
+            with: {
+                cliente: { columns: { usuNome: true } },
+                prestador: { columns: { mecLogin: true } }
+            }
+        });
+
+        if (!chatDetails) {
+            return reply.status(404).send({ message: 'Chat não encontrado.' });
+        }
+
+        // Verifica se o usuário logado é o cliente ou o prestador do chat
+        const isParticipant =
+            chatDetails.fk_usuario_usuID === userId ||
+            chatDetails.fk_prestador_servico_mecCNPJ === userId;
+
+        if (!isParticipant) {
+            return reply.status(403).send({ message: 'Acesso negado a este chat.' });
+        }
+
+        // 2. Buscar as mensagens do chat, ordenando da mais recente para a mais antiga
+        const messages = await db
+            .select({
+                id: mensagem.menID,
+                senderId: mensagem.fk_remetente_usuID, 
+                content: mensagem.menConteudo,
+                timestamp: mensagem.menData
+            })
+            .from(mensagem)
+            .where(eq(mensagem.fk_chat_chatID, chatId))
+            .orderBy(desc(mensagem.menData));
+
+        // 3. Determinar o nome a ser exibido no cabeçalho do chat
+        let shopName = '';
+        if (role === 'cliente') {
+            // Se o usuário é cliente, o nome do chat é o do prestador
+            shopName = (chatDetails as any).prestador?.mecLogin ?? 'Prestador';
+        } else if (role === 'prestador') {
+            // Se o usuário é prestador, o nome do chat é o do cliente
+            shopName = (chatDetails as any).cliente?.usuNome ?? 'Cliente';
+        }
+
+        // 4. Retornar os dados no formato esperado pelo frontend
+        // O frontend inverte a lista, então enviamos na ordem descendente (mais novas primeiro)
+        return reply.send({
+            messages,
+            shopName,
+        });
     });
 }

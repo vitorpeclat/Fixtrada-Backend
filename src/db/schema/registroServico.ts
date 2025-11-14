@@ -17,7 +17,7 @@ export const registroServico = pgTable('registro_servico', {
   regDescricao: text('regDescricao').notNull(),
   regData: date('regData').notNull(),
   regHora: timestamp('regHora').notNull(),
-  fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 9 }).notNull().references(() => endereco.endCEP),
+  fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 8 }).notNull().references(() => endereco.endCEP),
   fk_carro_carID: uuid('fk_carro_carID').notNull().references(() => carro.carID),
   fk_prestador_servico_mecCNPJ: varchar('fk_prestador_servico_mecCNPJ', { length: 14 }).references(() => prestadorServico.mecCNPJ),
   fk_tipo_servico_tseID: uuid('fk_tipo_servico_tseID').notNull().references(() => tipoServico.tseID),
@@ -31,12 +31,5 @@ export const registroServicoRelations = relations(registroServico, ({ one }) => 
   prestadorServico: one(prestadorServico, {
     fields: [registroServico.fk_prestador_servico_mecCNPJ],
     references: [prestadorServico.mecCNPJ],
-  }),
-
-  // --- RELAÇÃO NOVA (ADICIONADA) ---
-  // Assumindo que um serviço só pode ter um chat
-  chat: one(chat, {
-     fields: [registroServico.regID],
-     references: [chat.fk_registro_servico_regID]
   }),
 }));
