@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../env.ts';
 import { registroServico } from '../db/schema/registroServico.ts';
 import { carro } from '../db/schema/carro.ts';
+import { chat } from '../db/schema/chat.ts';
 
 interface UserSocket extends Socket {
     userId?: string; // ID do usuário (usuID ou mecCNPJ)
@@ -82,13 +83,24 @@ export function setupSocketIO(io: Server) {
           }
         }
 
-        // 1. Salvar mensagem no banco
+        // 1. Encontrar o chatID com base no serviceId (regID)
+        const chatRoom = await db.query.chat.findFirst({
+            where: eq(chat.fk_registro_servico_regID, serviceId),
+            columns: { chatID: true }
+        });
+
+        if (!chatRoom) {
+            console.error(`Erro: Chat não encontrado para o serviço ${serviceId}`);
+            socket.emit('message_error', { serviceId, error: 'Falha ao encontrar a sala de chat.' });
+            return;
+        }
+
+        // 2. Salvar mensagem no banco (com a correção)
         const [newMessage] = await db.insert(mensagem).values({
-          fk_registro_servico_regID: serviceId, // Certifique-se que serviceId é o UUID (regID)
-          menSender: senderName, // Ou pode usar o ID e buscar o nome
-          menSenderId: senderId, // Adiciona o ID do remetente
+          // Use o nome correto do campo de chave estrangeira conforme definido no seu schema
+          fk_chat_chatID: chatRoom.chatID,
+          menRemetente: socket.userRole === "cliente" ? "cliente" : "prestador", // Garante que nunca seja undefined
           menConteudo: content,
-          // menData é defaultNow()
         }).returning();
 
         // 2. Emitir mensagem para todos na sala do serviço (incluindo o remetente)
@@ -165,16 +177,23 @@ export function setupSocketIO(io: Server) {
 async function loadAndEmitHistory(socket: Socket, serviceId: string) {
     try {
         const historyDb = await db.query.mensagem.findMany({
-            where: eq(mensagem.fk_registro_servico_regID, serviceId),
+            where: eq(mensagem.fk_chat_chatID, serviceId),
             orderBy: (fields, { asc }) => [asc(fields.menData)],
+            columns: {
+                menID: true,
+                menConteudo: true,
+                menData: true,
+                menRemetente: true,
+                fk_chat_chatID: true
+            }
              // Adicione um limit se necessário
         });
 
         const history = historyDb.map(msg => ({
             menID: msg.menID,
             serviceId: serviceId,
-            senderName: msg.menSender,
-            senderId: msg.menSenderId, // Garante que o senderId seja enviado
+            senderName: msg.menRemetente,
+            // senderId: msg.menSenderId, // Removido pois não está disponível nos resultados
             content: msg.menConteudo,
             menData: msg.menData,
         }));
