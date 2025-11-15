@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1763153072791,
-      "tag": "0000_dummy-migration",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1763153083159,
-      "tag": "0001_revert-dummy-migration",
+      "when": 1763165143682,
+      "tag": "0000_acoustic_enchantress",
       "breakpoints": true
     }
   ]

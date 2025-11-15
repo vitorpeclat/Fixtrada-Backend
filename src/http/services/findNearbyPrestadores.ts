@@ -50,6 +50,8 @@ export async function findNearbyPrestadoresRoutes(app: FastifyInstance) {
           bairro: endereco.endBairro,
           cidade: endereco.endCidade,
           estado: endereco.endEstado,
+          latitude: prestadorServico.latitude,
+          longitude: prestadorServico.longitude,
           // Calcule a distância (exemplo MUITO simplificado, use Haversine real)
           distancia: sql<number>`
               (${R} * acos(cos(radians(${latitude})) * cos(radians("latitude")) *

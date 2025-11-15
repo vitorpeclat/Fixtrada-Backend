@@ -17,8 +17,8 @@ export const usuario = pgTable('usuario', {
   usuVerificado: boolean('usuVerificado').default(false),
   usuCodigoVerificacao: text('usuCodigoVerificacao'),
   usuCodigoVerificacaoExpira: timestamp('usuCodigoVerificacaoExpira', { withTimezone: true }),
-  codigoResetSenha: text('codigoResetSenha'),
-  codigoResetSenhaExpira: timestamp('codigoResetSenhaExpira', { withTimezone: true }),
+  usuStatus: text('usu_status').notNull(),
+  usuDataCriacao: timestamp('usu_data_criacao').defaultNow().notNull(),
 });
 
 export const usuarioRelations = relations(usuario, ({ many }) => ({

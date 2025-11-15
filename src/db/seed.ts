@@ -48,15 +48,14 @@ async function seed() {
     console.log('5 endereços inseridos com sucesso.');
 
     // Geração de dados de Usuário
-    // Hashear a senha padrão uma vez
     const plainPassword = '12345aA@';
-    const hashedPassword = await bcrypt.hash(plainPassword, 8);
 
     for (let i = 0; i < 5; i++) {
         const fullName = faker.person.fullName();
         const firstName = fullName.split(' ')[0] || `user${i + 1}`;
         // garantir unicidade do email/login adicionando índice
         const email = `${firstName.toLowerCase()}${i + 1}@email.com`;
+        const hashedPassword = await bcrypt.hash(plainPassword, 8); // Gera um novo hash para cada usuário
 
         const [insertedUsuario] = await db.insert(usuario).values({
             usuID: uuidv4(),
@@ -67,6 +66,7 @@ async function seed() {
             usuCpf: faker.string.numeric(11),
             usuTelefone: faker.string.numeric('119########'),
             usuAtivo: faker.datatype.boolean(),
+            usuStatus: 'ativo',
         }).returning();
         insertedUsuarios.push(insertedUsuario);
     }
@@ -98,6 +98,7 @@ async function seed() {
     // Geração de dados de Prestador de Serviço (depende de Endereço)
     for (let i = 0; i < 3; i++) {
         const enderecoAleatorio = insertedEnderecos[Math.floor(Math.random() * insertedEnderecos.length)];
+        const hashedPassword = await bcrypt.hash(plainPassword, 8); // Gera um novo hash para cada prestador
         const [insertedPrestador] = await db.insert(prestadorServico).values({
             mecCNPJ: faker.string.numeric(14),
             mecNota: faker.number.float({ min: 1, max: 5}),
@@ -149,6 +150,7 @@ async function seed() {
     for (let i = 0; i < 5; i++) { // Adiciona 5 chats independentes
         const usuarioAleatorio = insertedUsuarios[Math.floor(Math.random() * insertedUsuarios.length)];
         const prestadorAleatorio = insertedPrestadores[Math.floor(Math.random() * insertedPrestadores.length)];
+        const hashedPassword = await bcrypt.hash(plainPassword, 8); // Gera um novo hash para cada prestador no chat
 
         if (!usuarioAleatorio || !prestadorAleatorio) {
             console.warn("Usuário ou prestador aleatório não encontrado, pulando chat independente.");

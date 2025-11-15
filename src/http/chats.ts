@@ -38,6 +38,7 @@ export async function meusChatsRoutes(app: FastifyInstance) {
                 id: chat.chatID, // O ID principal agora é o chatID
                 shopName: prestadorServico.mecLogin,
                 lastMessage: sq.lastMessage,
+                serviceId: chat.fk_registro_servico_regID,
             })
             .from(chat) // O ponto de partida é a tabela 'chat'
             .leftJoin(prestadorServico, eq(chat.fk_prestador_servico_mecCNPJ, prestadorServico.mecCNPJ))
@@ -60,6 +61,7 @@ export async function meusChatsRoutes(app: FastifyInstance) {
                 id: chat.chatID,
                 shopName: usuario.usuNome, // Nome do cliente
                 lastMessage: sq.lastMessage,
+                serviceId: chat.fk_registro_servico_regID,
             })
             .from(chat)
             .leftJoin(usuario, eq(chat.fk_usuario_usuID, usuario.usuID))

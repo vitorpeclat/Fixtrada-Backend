@@ -7,6 +7,7 @@ import { customAlphabet } from 'nanoid';
 import { createServiceRequestSchema } from '../schemas/service.ts';
 import { eq } from 'drizzle-orm';
 import { emitNewServiceNotification } from '../../ws/socketHandler.ts';
+import { chat } from '../../db/schema/chat.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { carro } from '../../db/schema/carro.ts';
 import { tipoServico } from '../../db/schema/tipoServico.ts';
@@ -164,7 +165,7 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
         }
         return reply.send(cards);
     });
-
+    
     // Rota para buscar um serviço específico pelo ID
     app.get('/services/:id', async (request, reply) => {
         const { id } = request.params as { id: string };
@@ -193,12 +194,13 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
         }
 
         // Buscar dados relacionados
-        const [carroRelacionado, tipoServicoRelacionado, prestadorRelacionado] = await Promise.all([
+        const [carroRelacionado, tipoServicoRelacionado, prestadorRelacionado, chatRelacionado] = await Promise.all([
             db.query.carro.findFirst({ where: eq(carro.carID, servico.fk_carro_carID) }),
             db.query.tipoServico.findFirst({ where: eq(tipoServico.tseID, servico.fk_tipo_servico_tseID) }),
             servico.fk_prestador_servico_mecCNPJ 
                 ? db.query.prestadorServico.findFirst({ where: eq(prestadorServico.mecCNPJ, servico.fk_prestador_servico_mecCNPJ) })
-                : Promise.resolve(null)
+                : Promise.resolve(null),
+            db.query.chat.findFirst({ where: eq(chat.fk_registro_servico_regID, id) })
         ]);
 
         // Montar card do serviço
@@ -214,7 +216,8 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             comentarioCliente: servico.regComentarioCliente,
             carro: carroRelacionado || null,
             tipoServico: tipoServicoRelacionado || null,
-            prestador: prestadorRelacionado || null
+            prestador: prestadorRelacionado || null,
+            chatId: chatRelacionado?.chatID || null,
         };
 
         console.log('Card do serviço retornado:', card);
