@@ -1,14 +1,22 @@
+// ============================================================================
+// ROTAS: Atualização de Dados (Prestador)
+// ============================================================================
+// PUT /prestador/update - Atualizar perfil do prestador
+
 import type { FastifyInstance } from 'fastify';
 import { db } from '../../db/connection.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { authHook, JwtUserPayload } from '../hooks/auth.ts';
 import { eq } from 'drizzle-orm';
-import { updatePrestadorSchema } from '../schemas/updatePrestador.ts'; // ajuste o path
+import { updatePrestadorSchema } from '../schemas/updatePrestador.ts';
 
 export async function updatePrestadorRoutes(app: FastifyInstance) {
-  app.addHook('onRequest', authHook); // Protege a rota
+  app.addHook('onRequest', authHook);
 
-  app.put('/prestador/update', async (request, reply) => { // Usando PUT para atualização completa ou PATCH para parcial
+  // ========================================================================
+  // PUT /prestador/update - Atualizar dados do prestador
+  // ========================================================================
+  app.put('/prestador/update', async (request, reply) => {
     // Valida o corpo da requisição
     const dados = updatePrestadorSchema.parse(request.body);
 

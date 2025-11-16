@@ -1,3 +1,8 @@
+// ============================================================================
+// ROTAS: Cadastro de Prestador
+// ============================================================================
+// POST /prestador/cadastro - Registrar novo prestador de serviço
+
 import type { FastifyInstance } from 'fastify';
 import { hash } from 'bcrypt';
 import { eq } from 'drizzle-orm';
@@ -8,7 +13,9 @@ import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { criarPrestadorSchema } from '../schemas/auth.ts';
 
 export async function cadastroPrestadorRoutes(app: FastifyInstance) {
-  
+  // ========================================================================
+  // POST /prestador/cadastro - Cadastrar novo prestador
+  // ========================================================================
   app.post('/prestador/cadastro', async (request, reply) => {
       const dadosValidados = criarPrestadorSchema.parse(request.body);
 

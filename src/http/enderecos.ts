@@ -1,3 +1,10 @@
+// ============================================================================
+// ROTAS: Gerenciamento de Endereços
+// ============================================================================
+// POST /enderecos    - Adicionar novo endereço
+// GET  /enderecos    - Listar todos os endereços
+// GET  /enderecos/:id - Obter detalhes de um endereço
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/connection.ts';
@@ -16,7 +23,9 @@ const enderecoSchema = z.object({
 export async function enderecosRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
 
-    // Rota para adicionar um novo endereço
+    // ========================================================================
+    // POST /enderecos - Adicionar novo endereço
+    // ========================================================================
     app.post('/enderecos', async (request, reply) => {
         const dadosValidados = enderecoSchema.parse(request.body);
 
@@ -43,7 +52,9 @@ export async function enderecosRoutes(app: FastifyInstance) {
         });
     });
 
-    // Rota para buscar um endereço por CEP
+    // ========================================================================
+    // GET /enderecos/:cep - Buscar endereço por CEP
+    // ========================================================================
     app.get('/enderecos/:cep', async (request, reply) => {
         const { cep } = request.params as { cep: string };
 
@@ -62,7 +73,9 @@ export async function enderecosRoutes(app: FastifyInstance) {
         return reply.send(enderecoEncontrado);
     });
 
-    // Rota para listar todos os endereços
+    // ========================================================================
+    // GET /enderecos - Listar todos os endereços
+    // ========================================================================
     app.get('/enderecos', async (request, reply) => {
         const enderecos = await db.query.endereco.findMany({
             orderBy: (fields, { asc }) => [asc(fields.endCidade), asc(fields.endBairro)]

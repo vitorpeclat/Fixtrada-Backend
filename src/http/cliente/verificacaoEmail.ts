@@ -1,3 +1,8 @@
+// ============================================================================
+// ROTAS: Verificação de Email (Cliente)
+// ============================================================================
+// POST /cliente/verificar-email - Verificar código de confirmação de email
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
@@ -10,6 +15,9 @@ const verificacaoEmailSchema = z.object({
 });
 
 export async function verificacaoEmailClienteRoutes(app: FastifyInstance) {
+  // ========================================================================
+  // POST /cliente/verificar-email - Verificar código de confirmação
+  // ========================================================================
   app.post('/cliente/verificar-email', async (request, reply) => {
       const { email, codigo } = verificacaoEmailSchema.parse(request.body);
 

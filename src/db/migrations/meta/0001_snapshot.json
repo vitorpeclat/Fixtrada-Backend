@@ -1,0 +1,778 @@
+{
+  "id": "2f4e1df0-134c-4529-8f63-87137ace8ce1",
+  "prevId": "05791e77-90ef-4d74-8df3-b92adc224fa9",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.carro": {
+      "name": "carro",
+      "schema": "",
+      "columns": {
+        "carID": {
+          "name": "carID",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "carPlaca": {
+          "name": "carPlaca",
+          "type": "varchar(7)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carMarca": {
+          "name": "carMarca",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carModelo": {
+          "name": "carModelo",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carAno": {
+          "name": "carAno",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carCor": {
+          "name": "carCor",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carKM": {
+          "name": "carKM",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "carTpCombust": {
+          "name": "carTpCombust",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carOpTracao": {
+          "name": "carOpTracao",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carOpTrocaOleo": {
+          "name": "carOpTrocaOleo",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carOpTrocaPneu": {
+          "name": "carOpTrocaPneu",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carOpRevisao": {
+          "name": "carOpRevisao",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carAtivo": {
+          "name": "carAtivo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "carFavorito": {
+          "name": "carFavorito",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "fk_usuario_usuID": {
+          "name": "fk_usuario_usuID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "carro_fk_usuario_usuID_usuario_usuID_fk": {
+          "name": "carro_fk_usuario_usuID_usuario_usuID_fk",
+          "tableFrom": "carro",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "fk_usuario_usuID"
+          ],
+          "columnsTo": [
+            "usuID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "carro_carPlaca_unique": {
+          "name": "carro_carPlaca_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "carPlaca"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.chat": {
+      "name": "chat",
+      "schema": "",
+      "columns": {
+        "chatID": {
+          "name": "chatID",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "fk_usuario_usuID": {
+          "name": "fk_usuario_usuID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_prestador_servico_mecCNPJ": {
+          "name": "fk_prestador_servico_mecCNPJ",
+          "type": "varchar(14)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_registro_servico_regID": {
+          "name": "fk_registro_servico_regID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "chat_fk_usuario_usuID_usuario_usuID_fk": {
+          "name": "chat_fk_usuario_usuID_usuario_usuID_fk",
+          "tableFrom": "chat",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "fk_usuario_usuID"
+          ],
+          "columnsTo": [
+            "usuID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "chat_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk": {
+          "name": "chat_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk",
+          "tableFrom": "chat",
+          "tableTo": "prestador_servico",
+          "columnsFrom": [
+            "fk_prestador_servico_mecCNPJ"
+          ],
+          "columnsTo": [
+            "mecCNPJ"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "chat_fk_registro_servico_regID_registro_servico_regID_fk": {
+          "name": "chat_fk_registro_servico_regID_registro_servico_regID_fk",
+          "tableFrom": "chat",
+          "tableTo": "registro_servico",
+          "columnsFrom": [
+            "fk_registro_servico_regID"
+          ],
+          "columnsTo": [
+            "regID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.endereco": {
+      "name": "endereco",
+      "schema": "",
+      "columns": {
+        "endCEP": {
+          "name": "endCEP",
+          "type": "varchar(8)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "endRua": {
+          "name": "endRua",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "endBairro": {
+          "name": "endBairro",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "endCidade": {
+          "name": "endCidade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "endEstado": {
+          "name": "endEstado",
+          "type": "varchar(2)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mensagem": {
+      "name": "mensagem",
+      "schema": "",
+      "columns": {
+        "menID": {
+          "name": "menID",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "menConteudo": {
+          "name": "menConteudo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "menData": {
+          "name": "menData",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "fk_chat_chatID": {
+          "name": "fk_chat_chatID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_remetente_usuID": {
+          "name": "fk_remetente_usuID",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "mensagem_fk_chat_chatID_chat_chatID_fk": {
+          "name": "mensagem_fk_chat_chatID_chat_chatID_fk",
+          "tableFrom": "mensagem",
+          "tableTo": "chat",
+          "columnsFrom": [
+            "fk_chat_chatID"
+          ],
+          "columnsTo": [
+            "chatID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.prestador_servico": {
+      "name": "prestador_servico",
+      "schema": "",
+      "columns": {
+        "mecCNPJ": {
+          "name": "mecCNPJ",
+          "type": "varchar(14)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "mecNota": {
+          "name": "mecNota",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mecEnderecoNum": {
+          "name": "mecEnderecoNum",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mecLogin": {
+          "name": "mecLogin",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mecSenha": {
+          "name": "mecSenha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mecAtivo": {
+          "name": "mecAtivo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "mecFoto": {
+          "name": "mecFoto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mecVerificado": {
+          "name": "mecVerificado",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "mecCodigoVerificacao": {
+          "name": "mecCodigoVerificacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mecCodigoVerificacaoExpira": {
+          "name": "mecCodigoVerificacaoExpira",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "codigoResetSenha": {
+          "name": "codigoResetSenha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "codigoResetSenhaExpira": {
+          "name": "codigoResetSenhaExpira",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "latitude": {
+          "name": "latitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fk_endereco_endCEP": {
+          "name": "fk_endereco_endCEP",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "prestador_servico_fk_endereco_endCEP_endereco_endCEP_fk": {
+          "name": "prestador_servico_fk_endereco_endCEP_endereco_endCEP_fk",
+          "tableFrom": "prestador_servico",
+          "tableTo": "endereco",
+          "columnsFrom": [
+            "fk_endereco_endCEP"
+          ],
+          "columnsTo": [
+            "endCEP"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "prestador_servico_mecLogin_unique": {
+          "name": "prestador_servico_mecLogin_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "mecLogin"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.registro_servico": {
+      "name": "registro_servico",
+      "schema": "",
+      "columns": {
+        "regID": {
+          "name": "regID",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "regCodigo": {
+          "name": "regCodigo",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regNotaCliente": {
+          "name": "regNotaCliente",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regComentarioCliente": {
+          "name": "regComentarioCliente",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regValor": {
+          "name": "regValor",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "regStatus": {
+          "name": "regStatus",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "regDescricao": {
+          "name": "regDescricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "regData": {
+          "name": "regData",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "regHora": {
+          "name": "regHora",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_endereco_endCEP": {
+          "name": "fk_endereco_endCEP",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_carro_carID": {
+          "name": "fk_carro_carID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fk_prestador_servico_mecCNPJ": {
+          "name": "fk_prestador_servico_mecCNPJ",
+          "type": "varchar(14)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fk_tipo_servico_tseID": {
+          "name": "fk_tipo_servico_tseID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "registro_servico_fk_endereco_endCEP_endereco_endCEP_fk": {
+          "name": "registro_servico_fk_endereco_endCEP_endereco_endCEP_fk",
+          "tableFrom": "registro_servico",
+          "tableTo": "endereco",
+          "columnsFrom": [
+            "fk_endereco_endCEP"
+          ],
+          "columnsTo": [
+            "endCEP"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "registro_servico_fk_carro_carID_carro_carID_fk": {
+          "name": "registro_servico_fk_carro_carID_carro_carID_fk",
+          "tableFrom": "registro_servico",
+          "tableTo": "carro",
+          "columnsFrom": [
+            "fk_carro_carID"
+          ],
+          "columnsTo": [
+            "carID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "registro_servico_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk": {
+          "name": "registro_servico_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk",
+          "tableFrom": "registro_servico",
+          "tableTo": "prestador_servico",
+          "columnsFrom": [
+            "fk_prestador_servico_mecCNPJ"
+          ],
+          "columnsTo": [
+            "mecCNPJ"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "registro_servico_fk_tipo_servico_tseID_tipo_servico_tseID_fk": {
+          "name": "registro_servico_fk_tipo_servico_tseID_tipo_servico_tseID_fk",
+          "tableFrom": "registro_servico",
+          "tableTo": "tipo_servico",
+          "columnsFrom": [
+            "fk_tipo_servico_tseID"
+          ],
+          "columnsTo": [
+            "tseID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "registro_servico_regCodigo_unique": {
+          "name": "registro_servico_regCodigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "regCodigo"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tipo_servico": {
+      "name": "tipo_servico",
+      "schema": "",
+      "columns": {
+        "tseID": {
+          "name": "tseID",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "tseTipoProblema": {
+          "name": "tseTipoProblema",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.usuario": {
+      "name": "usuario",
+      "schema": "",
+      "columns": {
+        "usuID": {
+          "name": "usuID",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "usuLogin": {
+          "name": "usuLogin",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuSenha": {
+          "name": "usuSenha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuNome": {
+          "name": "usuNome",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuDataNasc": {
+          "name": "usuDataNasc",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuCpf": {
+          "name": "usuCpf",
+          "type": "varchar(11)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usuTelefone": {
+          "name": "usuTelefone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usuAtivo": {
+          "name": "usuAtivo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "usuRole": {
+          "name": "usuRole",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'cliente'"
+        },
+        "usuFoto": {
+          "name": "usuFoto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usuVerificado": {
+          "name": "usuVerificado",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "usuCodigoVerificacao": {
+          "name": "usuCodigoVerificacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usuCodigoVerificacaoExpira": {
+          "name": "usuCodigoVerificacaoExpira",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "codigoResetSenha": {
+          "name": "codigoResetSenha",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "codigoResetSenhaExpira": {
+          "name": "codigoResetSenhaExpira",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usu_status": {
+          "name": "usu_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "usu_data_criacao": {
+          "name": "usu_data_criacao",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "usuario_usuLogin_unique": {
+          "name": "usuario_usuLogin_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "usuLogin"
+          ]
+        },
+        "usuario_usuCpf_unique": {
+          "name": "usuario_usuCpf_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "usuCpf"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.remetente": {
+      "name": "remetente",
+      "schema": "public",
+      "values": [
+        "cliente",
+        "prestador"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

@@ -1,3 +1,8 @@
+// ============================================================================
+// SOCKET.IO HANDLER - Comunicação em Tempo Real
+// ============================================================================
+// Gerencia conexões WebSocket, autenticação JWT e eventos de chat
+
 import { Server, Socket } from 'socket.io';
 import { db } from '../db/connection.ts';
 import { mensagem } from '../db/schema/mensagem.ts';
@@ -9,21 +14,29 @@ import { registroServico } from '../db/schema/registroServico.ts';
 import { carro } from '../db/schema/carro.ts';
 import { chat } from '../db/schema/chat.ts';
 
+// ============================================================================
+// TIPOS E INTERFACES
+// ============================================================================
 interface UserSocket extends Socket {
-    userId?: string; // ID do usuário (usuID ou mecCNPJ)
+    userId?: string;
     userRole?: 'cliente' | 'prestador';
 }
 
-// Mapeamento simples para rastrear usuários online (em memória - considere Redis para produção)
-const onlineUsers = new Map<string, string>(); // userId -> socket.id
+// Rastreamento de usuários online (considere Redis em produção)
+const onlineUsers = new Map<string, string>();
 
+// ============================================================================
+// CONFIGURAÇÃO PRINCIPAL - setupSocketIO
+// ============================================================================
 export function setupSocketIO(io: Server) {
 
-  // Middleware de autenticação (opcional, mas recomendado)
+  // ========================================================================
+  // MIDDLEWARE DE AUTENTICAÇÃO JWT
+  // ========================================================================
   io.use((socket: UserSocket, next) => {
    const token = socket.handshake.auth.token;
    if (!token) {
-     socket.emit('auth_error', 'Authentication error: Token missing'); // Notifica o cliente
+     socket.emit('auth_error', 'Authentication error: Token missing');
      return next(new Error('Authentication error: Token missing'));
    }
    try {
@@ -32,89 +45,82 @@ export function setupSocketIO(io: Server) {
      socket.userRole = payload.role;
      next();
    } catch (err) {
-     socket.emit('auth_error', 'Authentication error: Invalid token'); // Notifica o cliente
+     socket.emit('auth_error', 'Authentication error: Invalid token');
      next(new Error('Authentication error: Invalid token'));
    }
 });
 
-
+  // ========================================================================
+  // EVENTO DE CONEXÃO
+  // ========================================================================
   io.on('connection', (socket: UserSocket) => {
-    console.log(`Usuário conectado: ${socket.id}, ID: ${socket.userId}, Role: ${socket.userRole}`);
+    console.log(`Socket conectado: ${socket.id} | Usuário: ${socket.userId} | Role: ${socket.userRole}`);
 
-    // Rastrear usuário online (se autenticado)
     if (socket.userId) {
         onlineUsers.set(socket.userId, socket.id);
-        // Opcional: Entrar em uma sala com base no ID do usuário
         socket.join(socket.userId);
-        console.log(`Usuário ${socket.userId} entrou na sala ${socket.userId}`);
     }
 
-    // --- Eventos de Chat (RF012) ---
-
-    // Cliente/Prestador entra em uma sala de chat específica do serviço
+    // ====================================================================
+    // EVENTOS DE CHAT
+    // ====================================================================
+    
+    // Evento: Entrar na sala de chat de um serviço
     socket.on('join_service_chat', (serviceId: string) => {
-      if (!socket.userId) return; // Precisa estar autenticado
+      if (!socket.userId) return;
       socket.join(serviceId);
-      console.log(`Usuário ${socket.userId} entrou no chat do serviço ${serviceId}`);
-      // Opcional: Carregar histórico de mensagens e emitir para o socket que entrou
+      console.log(`Usuário ${socket.userId} entrou no chat ${serviceId}`);
       loadAndEmitHistory(socket, serviceId);
     });
 
-    // Receber mensagem e retransmitir + salvar no DB
+    // Evento: Receber e salvar mensagem
     socket.on('send_message', async (data: { serviceId: string, senderId: string, senderName?: string, content: string }) => {
        if (!socket.userId || socket.userId !== data.senderId) {
-            console.error("Tentativa de enviar mensagem por usuário não autorizado ou não correspondente.");
-            return; // Ignora se o senderId não bate com o socket autenticado
+            console.error("Tentativa não autorizada de enviar mensagem");
+            return;
        }
 
       const { serviceId, senderId, content } = data;
       let senderName = data.senderName;
 
       try {
+        // Buscar nome do usuário se não fornecido
         if (!senderName) {
           const user = await db.query.usuario.findFirst({
             where: eq(usuario.usuID, senderId),
           });
-          if (user) {
-            senderName = user.usuNome;
-          } else {
-            console.warn(`Sender name not provided and user not found for senderId: ${senderId}. Using 'Desconhecido'.`);
-            senderName = "Desconhecido";
-          }
+          senderName = user?.usuNome || "Desconhecido";
         }
 
-        // 1. Encontrar o chatID com base no serviceId (regID)
+        // Buscar ou criar sala de chat
         const chatRoom = await db.query.chat.findFirst({
             where: eq(chat.fk_registro_servico_regID, serviceId),
             columns: { chatID: true }
         });
 
         if (!chatRoom) {
-            console.error(`Erro: Chat não encontrado para o serviço ${serviceId}`);
-            socket.emit('message_error', { serviceId, error: 'Falha ao encontrar a sala de chat.' });
+            socket.emit('message_error', { serviceId, error: 'Sala de chat não encontrada' });
             return;
         }
 
-        // 2. Salvar mensagem no banco (com a correção)
+        // Salvar mensagem no banco de dados
         const [newMessage] = await db.insert(mensagem).values({
-          // Use o nome correto do campo de chave estrangeira conforme definido no seu schema
           fk_chat_chatID: chatRoom.chatID,
-          menRemetente: socket.userRole === "cliente" ? "cliente" : "prestador", // Garante que nunca seja undefined
+          fk_remetente_usuID: socket.userId,
           menConteudo: content,
         }).returning();
 
-        // 2. Emitir mensagem para todos na sala do serviço (incluindo o remetente)
+        // Emitir mensagem para todos na sala
         io.to(serviceId).emit('receive_message', {
             menID: newMessage.menID,
             serviceId: serviceId,
             senderName: senderName,
-            senderId: senderId, // Adiciona o ID do remetente
+            senderId: senderId,
             content: content,
             menData: newMessage.menData,
         });
-         console.log(`Mensagem enviada no chat ${serviceId} por ${senderName}`);
 
-        // 3. Notificar ambos os usuários (remetente e destinatário) para atualizarem suas listas de chat
+        // Notificar ambos os usuários de nova atividade
         const service = await db.query.registroServico.findFirst({
             where: eq(registroServico.regID, serviceId),
             columns: {
@@ -126,46 +132,30 @@ export function setupSocketIO(io: Server) {
         if (service) {
             const car = await db.query.carro.findFirst({
                 where: eq(carro.carID, service.fk_carro_carID),
-                columns: {
-                    fk_usuario_usuID: true
-                }
+                columns: { fk_usuario_usuID: true }
             });
 
             if (car) {
                 const clienteId = car.fk_usuario_usuID;
                 const prestadorId = service.fk_prestador_servico_mecCNPJ;
 
-                // Garante que ambos os IDs existam antes de emitir
                 if (clienteId && prestadorId) {
-                    // Emite para o remetente e para o destinatário
                     io.to(clienteId).to(prestadorId).emit('new_chat_activity');
-                    console.log(`Evento new_chat_activity emitido para ${clienteId} e ${prestadorId}`);
                 }
             }
         }
 
       } catch (error) {
-        console.error(`Erro ao salvar/emitir mensagem para serviço ${serviceId}:`, error);
-        // Opcional: Emitir erro de volta para o remetente
-        socket.emit('message_error', { serviceId, error: 'Falha ao enviar mensagem.' });
+        console.error(`Erro ao enviar mensagem: ${error}`);
+        socket.emit('message_error', { serviceId, error: 'Falha ao enviar mensagem' });
       }
     });
 
-    // --- Notificação de Novo Serviço (RF011) ---
-    // Este evento deve ser EMITIDO PELO BACKEND (ex: na rota de criação de serviço)
-    // para os prestadores relevantes. A função abaixo é um EXEMPLO de como emitir.
-    // Você chamaria algo como `emitNewServiceNotification` de dentro da sua rota
-    // de criação de serviço (`serviceCliente.ts`).
-
-    // Exemplo de como emitir (NÃO colocar este listener aqui, apenas a função de emissão)
-    // socket.on('EXEMPLO_emitir_notificacao', (prestadorId: string, serviceData: any) => {
-    //     emitNewServiceNotification(io, prestadorId, serviceData);
-    // });
-
-
-    // Lógica de Desconexão
+    // ====================================================================
+    // EVENTO DE DESCONEXÃO
+    // ====================================================================
     socket.on('disconnect', () => {
-      console.log(`Usuário desconectado: ${socket.id}, ID: ${socket.userId}`);
+      console.log(`Socket desconectado: ${socket.id} | Usuário: ${socket.userId}`);
       if (socket.userId) {
         onlineUsers.delete(socket.userId);
       }
@@ -173,7 +163,9 @@ export function setupSocketIO(io: Server) {
   });
 }
 
-// Função para carregar histórico do chat
+// ============================================================================
+// FUNÇÃO AUXILIAR: Carregar histórico de chat
+// ============================================================================
 async function loadAndEmitHistory(socket: Socket, serviceId: string) {
     try {
         const historyDb = await db.query.mensagem.findMany({
@@ -183,38 +175,35 @@ async function loadAndEmitHistory(socket: Socket, serviceId: string) {
                 menID: true,
                 menConteudo: true,
                 menData: true,
-                menRemetente: true,
-                fk_chat_chatID: true
+                fk_remetente_usuID: true,
             }
-             // Adicione um limit se necessário
         });
 
         const history = historyDb.map(msg => ({
             menID: msg.menID,
             serviceId: serviceId,
-            senderName: msg.menRemetente,
-            // senderId: msg.menSenderId, // Removido pois não está disponível nos resultados
+            senderName: msg.fk_remetente_usuID,
             content: msg.menConteudo,
             menData: msg.menData,
         }));
 
-
         socket.emit('chat_history', { serviceId, history });
     } catch (error) {
-        console.error(`Erro ao carregar histórico do chat ${serviceId}:`, error);
-        socket.emit('history_error', { serviceId, error: 'Falha ao carregar histórico.' });
+        console.error(`Erro ao carregar histórico: ${error}`);
+        socket.emit('history_error', { serviceId, error: 'Falha ao carregar histórico' });
     }
 }
 
-// Função auxiliar para emitir notificação de novo serviço (CHAMAR A PARTIR DA ROTA)
+// ============================================================================
+// FUNÇÃO AUXILIAR: Emitir notificação de novo serviço
+// ============================================================================
+// Chamada a partir das rotas de criação de serviço
 export function emitNewServiceNotification(io: Server, prestadorId: string, serviceData: any) {
-    // Encontra o socket do prestador se ele estiver online
     const targetSocketId = onlineUsers.get(prestadorId);
     if (targetSocketId) {
         io.to(targetSocketId).emit('new_service_request', serviceData);
-        console.log(`Notificação de serviço ${serviceData.regCodigo || serviceData.id} enviada para prestador ${prestadorId}`);
+        console.log(`Notificação enviada para prestador ${prestadorId}`);
     } else {
-        console.log(`Prestador ${prestadorId} não está online para receber notificação.`);
-        // Aqui você pode adicionar lógica para fallback (ex: Push Notification, SMS)
+        console.log(`Prestador ${prestadorId} offline - notificação não enviada`);
     }
 }

@@ -1,19 +1,25 @@
+// ============================================================================
+// ROTAS: Solicitação de Recuperação de Senha
+// ============================================================================
+// POST /password/request-reset - Solicitar código para resetar senha
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
 import { usuario } from '../../db/schema/usuario.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { eq } from 'drizzle-orm';
-import { solicitarResetSenhaSchema } from '../schemas/passwordReset.ts'; // ajuste o path
+import { solicitarResetSenhaSchema } from '../schemas/passwordReset.ts';
 import { customAlphabet } from 'nanoid';
 import { getMailClient } from '../../lib/mail.ts';
 import { env } from '../../env.ts';
-import nodemailer from 'nodemailer';
 
-// Gera um código numérico de 6 dígitos
 const generateCode = customAlphabet('0123456789', 6);
 
 export async function solicitarResetSenhaRoutes(app: FastifyInstance) {
+  // ========================================================================
+  // POST /password/request-reset - Solicitar código de recuperação
+  // ========================================================================
   app.post('/password/request-reset', async (request, reply) => {
     const { email } = solicitarResetSenhaSchema.parse(request.body);
 
@@ -44,15 +50,12 @@ export async function solicitarResetSenhaRoutes(app: FastifyInstance) {
 
       // Enviar e-mail
       const mail = await getMailClient();
-      const message = await mail.sendMail({
+      await mail.sendMail({
         from: `Fixtrada <${env.email}>`,
         to: email,
         subject: 'Recuperação de Senha Fixtrada',
         text: `Seu código para redefinir a senha é: ${codigoReset}. Este código expira em 15 minutos.`,
-        // html: `<p>Seu código para redefinir a senha é: <strong>${codigoReset}</strong>. Este código expira em 15 minutos.</p>` // Opcional
       });
-
-       console.log('URL E-mail Recuperação (Teste): ', nodemailer.getTestMessageUrl(message));
 
       return reply.status(200).send({ message: 'Se o e-mail estiver cadastrado, um código de recuperação será enviado.' });
 

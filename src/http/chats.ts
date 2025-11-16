@@ -1,3 +1,9 @@
+// ============================================================================
+// ROTAS: Gerenciamento de Chats e Mensagens
+// ============================================================================
+// GET /cliente/meus-chats        - Listar chats do usuário (cliente/prestador)
+// GET /chats/:chatId/messages    - Obter mensagens de um chat específico
+
 import { sql, eq, and, inArray, desc, or, isNull } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { db } from '../db/connection.ts';
@@ -5,10 +11,9 @@ import { mensagem } from '../db/schema/mensagem.ts';
 import { prestadorServico } from '../db/schema/prestadorServico.ts';
 import { usuario } from '../db/schema/usuario.ts';
 import { authHook, JwtUserPayload } from './hooks/auth.ts';
-import { chat } from '../db/schema/chat.ts'; // IMPORTADO 'chat'
+import { chat } from '../db/schema/chat.ts';
 import { registroServico } from '../db/schema/registroServico.ts';
 
-// Define o tipo para os parâmetros da rota de mensagens
 type GetChatMessagesParams = {
     chatId: string;
 }
@@ -16,6 +21,9 @@ type GetChatMessagesParams = {
 export async function meusChatsRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
 
+    // ========================================================================
+    // GET /cliente/meus-chats - Listar chats do usuário (cliente/prestador)
+    // ========================================================================
     app.get('/cliente/meus-chats', async (request, reply) => {
         const { sub: userId, role } = request.user as JwtUserPayload;
 
@@ -85,6 +93,9 @@ export async function meusChatsRoutes(app: FastifyInstance) {
         return reply.send(services);
     });
 
+    // ========================================================================
+    // GET /chats/:chatId/messages - Obter mensagens de um chat específico
+    // ========================================================================
     app.get<{ Params: GetChatMessagesParams }>('/chats/:chatId/messages', async (request, reply) => {
         const { sub: userId, role } = request.user as JwtUserPayload;
         const { chatId } = request.params;

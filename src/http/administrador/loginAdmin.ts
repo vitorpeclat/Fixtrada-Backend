@@ -1,3 +1,8 @@
+// ============================================================================
+// ROTAS: Login de Administrador
+// ============================================================================
+// POST /admin/login - Autenticação de administrador
+
 import type { FastifyInstance } from 'fastify';
 import { compare } from 'bcrypt';
 import { eq } from 'drizzle-orm';
@@ -7,6 +12,9 @@ import { usuario } from '../../db/schema/usuario.ts';
 import { loginSchema } from '../schemas/auth.ts';
 
 export async function loginAdminRoutes(app: FastifyInstance) {
+  // ========================================================================
+  // POST /admin/login - Autenticar administrador
+  // ========================================================================
   app.post('/admin/login', async (request, reply) => {
       const { login, senha } = loginSchema.parse(request.body);
 

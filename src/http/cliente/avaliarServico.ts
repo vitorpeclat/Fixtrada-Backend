@@ -1,3 +1,8 @@
+// ============================================================================
+// ROTAS: Avaliação de Serviço (Cliente)
+// ============================================================================
+// POST /cliente/servicos/:serviceId/avaliar - Avaliar um serviço concluído
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
@@ -15,6 +20,9 @@ export async function avaliarServicoRoutes(app: FastifyInstance) {
         comentario: z.string().max(500).optional(),
     });
 
+    // ========================================================================
+    // POST /cliente/servicos/:serviceId/avaliar - Avaliar serviço
+    // ========================================================================
     app.post('/cliente/servicos/:serviceId/avaliar', async (request, reply) => {
         const { sub: userId, role } = request.user as JwtUserPayload;
         if (role !== 'cliente') {

@@ -1,3 +1,8 @@
+// ============================================================================
+// ROTAS: Login de Prestador
+// ============================================================================
+// POST /prestador/login - Autenticação de prestador de serviço
+
 import type { FastifyInstance } from 'fastify';
 import { compare } from 'bcrypt';
 import { eq } from 'drizzle-orm';
@@ -7,6 +12,9 @@ import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { loginSchema } from '../schemas/auth.ts';
 
 export async function loginPrestadorRoutes(app: FastifyInstance) {
+  // ========================================================================
+  // POST /prestador/login - Autenticar prestador com CNPJ/login e senha
+  // ========================================================================
   app.post('/prestador/login', async (request, reply) => {
       const { login, senha } = loginSchema.parse(request.body);
 

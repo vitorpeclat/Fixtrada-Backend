@@ -1,3 +1,8 @@
+// ============================================================================
+// ROTAS: Histórico de Serviços do Cliente
+// ============================================================================
+// GET /cliente/historico - Listar histórico de serviços do cliente
+
 import type { FastifyInstance } from 'fastify';
 import { db } from '../../db/connection.ts';
 import { carro } from '../../db/schema/carro.ts';
@@ -15,21 +20,19 @@ export async function historicoClienteRoutes(app: FastifyInstance) {
             return reply.status(403).send({ message: 'Acesso negado. Rota exclusiva para clientes.' });
         }
 
-        // 1. Encontrar todos os carros do cliente
+        // Encontrar todos os carros do cliente
         const clientCars = await db.query.carro.findMany({
             where: eq(carro.fk_usuario_usuID, userId),
-            columns: {
-                carID: true
-            }
+            columns: { carID: true }
         });
 
         if (clientCars.length === 0) {
-            return reply.send([]); // Cliente não tem carros, logo não tem histórico
+            return reply.send([]);
         }
 
         const carIds = clientCars.map(c => c.carID);
 
-        // 2. Encontrar todos os registros de serviço para esses carros
+        // Encontrar todos os registros de serviço para esses carros
         const historico = await db.query.registroServico.findMany({
             where: inArray(registroServico.fk_carro_carID, carIds),
             orderBy: (registroServico, { desc }) => [desc(registroServico.regData)],

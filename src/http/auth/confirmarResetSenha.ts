@@ -1,13 +1,21 @@
+// ============================================================================
+// ROTAS: Confirmação de Recuperação de Senha
+// ============================================================================
+// POST /password/confirm-reset - Confirmar novo código e atualizar senha
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
 import { usuario } from '../../db/schema/usuario.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { and, eq, gt } from 'drizzle-orm';
-import { confirmarResetSenhaSchema } from '../schemas/passwordReset.ts'; // ajuste o path
+import { confirmarResetSenhaSchema } from '../schemas/passwordReset.ts';
 import { hash } from 'bcrypt';
 
 export async function confirmarResetSenhaRoutes(app: FastifyInstance) {
+  // ========================================================================
+  // POST /password/confirm-reset - Confirmar código e redefinir senha
+  // ========================================================================
   app.post('/password/confirm-reset', async (request, reply) => {
     const { email, codigo, novaSenha } = confirmarResetSenhaSchema.parse(request.body);
 

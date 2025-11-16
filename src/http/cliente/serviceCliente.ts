@@ -1,3 +1,11 @@
+// ============================================================================
+// ROTAS: Solicitação de Serviços (Cliente)
+// ============================================================================
+// POST   /services           - Criar nova solicitação de serviço
+// GET    /services           - Listar todas as solicitações do cliente
+// GET    /services/:id       - Obter detalhes de uma solicitação específica
+// PATCH  /services/:id/finalize - Finalizar uma solicitação de serviço
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
@@ -18,7 +26,9 @@ const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 export async function serviceClienteRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
 
-    // Registro de novas solicitações de serviço (RF007)
+    // ========================================================================
+    // POST /services - Criar nova solicitação de serviço
+    // ========================================================================
     app.post('/services', async (request, reply) => {
         const user = request.user as JwtUserPayload;
         if (!user || user.role !== 'cliente') {
@@ -86,21 +96,13 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             description: registroServico.regDescricao,
             status: registroServico.regStatus,
         });
-        /*
-        // Se foi especificado um prestador, notificar via WebSocket
-        if (dadosValidados.fk_prestador_servico_mecCNPJ && app.io) {
-            emitNewServiceNotification(app.io, dadosValidados.fk_prestador_servico_mecCNPJ, {
-                id: newService.id,
-                code: newService.code,
-                description: newService.description,
-            });
-        }
-        */
 
         return reply.status(201).send(newService);
     });
 
-    // Rota para resgatar os serviços solicitados pelo cliente autenticado
+    // ========================================================================
+    // GET /services - Listar todas as solicitações do cliente
+    // ========================================================================
     app.get('/services', async (request, reply) => {
         const user = request.user as JwtUserPayload;
         if (!user || user.role !== 'cliente') {
@@ -160,13 +162,12 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             prestador: servico.fk_prestador_servico_mecCNPJ ? prestadoresMap.get(servico.fk_prestador_servico_mecCNPJ) || null : null
         }));
 
-        if (cards.length > 0) {
-            console.log('Exemplo de card retornado:', cards[0]);
-        }
         return reply.send(cards);
     });
     
-    // Rota para buscar um serviço específico pelo ID
+    // ========================================================================
+    // GET /services/:id - Obter detalhes de uma solicitação específica
+    // ========================================================================
     app.get('/services/:id', async (request, reply) => {
         const { id } = request.params as { id: string };
         const user = request.user as JwtUserPayload;
@@ -220,11 +221,12 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             chatId: chatRelacionado?.chatID || null,
         };
 
-        console.log('Card do serviço retornado:', card);
         return reply.send(card);
     });
 
-    // Rota para finalizar um serviço (marcar como concluído)
+    // ========================================================================
+    // PATCH /services/:id/finalize - Finalizar solicitação de serviço
+    // ========================================================================
     app.patch('/services/:id/finalize', async (request, reply) => {
         const { id } = request.params as { id: string };
         const user = request.user as JwtUserPayload;

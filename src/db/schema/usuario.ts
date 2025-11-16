@@ -1,3 +1,8 @@
+// ============================================================================
+// SCHEMA: Usuário
+// ============================================================================
+// Tabela de usuários do sistema (clientes e administradores)
+
 import { boolean, date, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { carro } from "./carro.ts";
@@ -11,12 +16,13 @@ export const usuario = pgTable('usuario', {
   usuCpf: varchar('usuCpf', { length: 11 }).notNull().unique(),
   usuTelefone: text('usuTelefone'),
   usuAtivo: boolean('usuAtivo').notNull().default(true),
-  usuRole: varchar('usuRole', { length: 10 }).notNull().default('cliente'), // cliente, admin
-  // LINHA ADICIONADA
-  usuFoto: text('usuFoto'), // Pode ser a URL para a imagem
+  usuRole: varchar('usuRole', { length: 10 }).notNull().default('cliente'),
+  usuFoto: text('usuFoto'),
   usuVerificado: boolean('usuVerificado').default(false),
   usuCodigoVerificacao: text('usuCodigoVerificacao'),
   usuCodigoVerificacaoExpira: timestamp('usuCodigoVerificacaoExpira', { withTimezone: true }),
+  codigoResetSenha: text('codigoResetSenha'),
+  codigoResetSenhaExpira: timestamp('codigoResetSenhaExpira', { withTimezone: true }),
   usuStatus: text('usu_status').notNull(),
   usuDataCriacao: timestamp('usu_data_criacao').defaultNow().notNull(),
 });

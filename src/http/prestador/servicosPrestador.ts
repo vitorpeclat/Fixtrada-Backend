@@ -1,3 +1,11 @@
+// ============================================================================
+// ROTAS: Gerenciamento de Serviços (Prestador)
+// ============================================================================
+// GET  /prestador/servicos/disponiveis     - Listar serviços disponíveis
+// POST /prestador/servicos/:serviceId/aceitar  - Aceitar um serviço
+// POST /prestador/servicos/:serviceId/recusar  - Recusar um serviço
+// POST /prestador/servicos/:serviceId/proposta - Enviar proposta de orçamento
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
@@ -17,7 +25,9 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
         }
     }
 
-    // Listar serviços disponíveis (pendentes sem prestador atribuído)
+    // ========================================================================
+    // GET /prestador/servicos/disponiveis - Listar serviços disponíveis
+    // ========================================================================
     app.get('/prestador/servicos/disponiveis', { preHandler: [isPrestador] }, async (request, reply) => {
         const servicosDisponiveis = await db.query.registroServico.findMany({
             where: and(
@@ -30,7 +40,9 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
         return reply.send(servicosDisponiveis);
     });
 
-    // Aceitar serviço
+    // ========================================================================
+    // POST /prestador/servicos/:serviceId/aceitar - Aceitar um serviço
+    // ========================================================================
     app.post('/prestador/servicos/:serviceId/aceitar', { preHandler: [isPrestador] }, async (request, reply) => {
         const { sub: prestadorId } = request.user as JwtUserPayload;
         const { serviceId } = paramsSchema.parse(request.params);
@@ -64,7 +76,9 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
         return reply.send(updatedService);
     });
 
-    // Recusar serviço
+    // ========================================================================
+    // POST /prestador/servicos/:serviceId/recusar - Recusar um serviço
+    // ========================================================================
     app.post('/prestador/servicos/:serviceId/recusar', { preHandler: [isPrestador] }, async (request, reply) => {
         const { sub: prestadorId } = request.user as JwtUserPayload;
         const { serviceId } = paramsSchema.parse(request.params);
@@ -97,7 +111,9 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
         return reply.send(updatedService);
     });
 
-    // Enviar proposta de orçamento
+    // ========================================================================
+    // POST /prestador/servicos/:serviceId/proposta - Enviar proposta
+    // ========================================================================
     app.post('/prestador/servicos/:serviceId/proposta', { preHandler: [isPrestador] }, async (request, reply) => {
         const { sub: prestadorId } = request.user as JwtUserPayload;
         const { serviceId } = paramsSchema.parse(request.params);

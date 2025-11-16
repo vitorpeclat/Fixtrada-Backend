@@ -1,15 +1,21 @@
+// ============================================================================
+// ROTAS: Atualização de Dados do Cliente
+// ============================================================================
+// POST /cliente/update - Atualizar dados do perfil do cliente
+
 import type { FastifyInstance } from 'fastify';
 import { db } from '../../db/connection.ts';
 import { usuario } from '../../db/schema/usuario.ts';
 import { authHook, JwtUserPayload } from '../hooks/auth.ts';
 import { eq } from 'drizzle-orm';
 import { updateClienteSchema } from '../schemas/updateCliente.ts';
-import { z } from 'zod';
 
 export async function updateClienteRoutes(app: FastifyInstance) {
   app.addHook('onRequest', authHook);
 
-  // Atualiza dados do cliente; o token vem no header e já é verificado pelo hook.
+  // ========================================================================
+  // POST /cliente/update - Atualizar dados do cliente
+  // ========================================================================
   app.post('/cliente/update', async (request, reply) => {
       const dados = updateClienteSchema.parse(request.body);
       const { sub: usuID } = request.user as JwtUserPayload;

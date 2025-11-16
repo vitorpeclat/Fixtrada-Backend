@@ -1,17 +1,19 @@
+// ============================================================================
+// ROTAS: Cadastro de Cliente
+// ============================================================================
+// POST /cliente/cadastro - Registrar novo cliente com verificação de e-mail
+
 import type { FastifyInstance } from 'fastify';
 import { hash } from 'bcrypt';
 import { eq } from 'drizzle-orm';
-import { z } from 'zod';
 import { db } from '../../db/connection.ts';
 import { usuario } from '../../db/schema/usuario.ts';
 import { criarClienteSchema } from '../schemas/auth.ts';
 import { customAlphabet } from 'nanoid';
 import { getMailClient } from '../../lib/mail.ts';
-import nodemailer from 'nodemailer';
 import { env } from '../../env.ts';
 
 export async function cadastroClienteRoutes(app: FastifyInstance) {
-  
   app.post('/cliente/cadastro', async (request, reply) => {
       const dadosValidados = criarClienteSchema.parse(request.body);
 
@@ -31,10 +33,11 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
         return reply.status(409).send({ message: 'E-mail ou CPF já cadastrado.' });
       }
 
+      // Gerar hash de senha e código de verificação (1 hora de expiração)
       const senhaHash = await hash(dadosValidados.usuSenha, 8);
       const codigoVerificacao = customAlphabet('0123456789', 6)();
       const agora = new Date();
-      const usuCodigoVerificacaoExpira = new Date(agora.getTime() + 60 * 60 * 1000); // 1 hora
+      const usuCodigoVerificacaoExpira = new Date(agora.getTime() + 60 * 60 * 1000);
 
       const [newUser] = await db.insert(usuario).values({
           ...dadosValidados,
@@ -42,6 +45,7 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
           usuAtivo: true,
           usuCodigoVerificacao: codigoVerificacao,
           usuCodigoVerificacaoExpira: usuCodigoVerificacaoExpira,
+          usuStatus: 'ativo',
       }).returning({
           usuID: usuario.usuID,
           usuLogin: usuario.usuLogin,
@@ -56,8 +60,9 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
         }
       );
 
+      // Enviar e-mail com código de verificação
       const mail = await getMailClient();
-      const message = await mail.sendMail({
+      await mail.sendMail({
           from: `Fixtrada <${env.email}>`,
           to: dadosValidados.usuLogin,
           subject: 'Código de Verificação de E-mail',

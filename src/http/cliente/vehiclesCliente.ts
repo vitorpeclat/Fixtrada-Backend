@@ -1,3 +1,11 @@
+// ============================================================================
+// ROTAS: Veículos do Cliente
+// ============================================================================
+// POST   /vehicle           - Criar novo veículo
+// GET    /vehicles          - Listar veículos do cliente
+// PUT    /vehicles/:vehicleId - Atualizar veículo
+// DELETE /vehicles/:vehicleId - Deletar veículo
+
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
@@ -9,7 +17,9 @@ import { authHook, JwtUserPayload } from '../hooks/auth.ts';
 export async function vehicleClienteRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
 
-    // Criar novo veículo
+    // ========================================================================
+    // POST /vehicle - Criar novo veículo
+    // ========================================================================
     app.post('/vehicle', async (request, reply) => {
             const { sub: userId } = request.user as JwtUserPayload;
             const dadosValidados = vehicleSchema.parse(request.body);
@@ -21,7 +31,9 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
             return reply.status(201).send(newVehicle);
     });
 
-    // Listar veículos do cliente
+    // ========================================================================
+    // GET /vehicles - Listar veículos do cliente
+    // ========================================================================
     app.get('/vehicles', async (request, reply) => {
         const { sub: userId } = request.user as JwtUserPayload;
         
@@ -31,7 +43,9 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
         return reply.send(vehicles);
     });
 
-    // Atualizar dados do veículo
+    // ========================================================================
+    // PUT /vehicles/:vehicleId - Atualizar veículo
+    // ========================================================================
     app.put('/vehicles/:vehicleId', async (request, reply) => {
         const { sub: userId } = request.user as JwtUserPayload;
         const paramsSchema = z.object({ vehicleId: z.string().uuid() });
