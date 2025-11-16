@@ -1,3 +1,8 @@
+// ============================================================================
+// SCHEMAS: Validação de Autenticação
+// ============================================================================
+// Definições Zod para validação de criação de contas e login
+
 import { z } from 'zod';
 
 export const criarClienteSchema = z.object({

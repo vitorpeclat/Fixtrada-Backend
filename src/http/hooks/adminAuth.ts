@@ -1,5 +1,10 @@
+// ============================================================================
+// MIDDLEWARE: Autenticação de Administrador
+// ============================================================================
+// Valida token JWT e verifica se o usuário tem permissão de administrador
+
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { JwtUserPayload } from './auth.ts'; // Reutiliza a interface
+import { JwtUserPayload } from './auth.ts';
 
 export async function adminAuthHook(request: FastifyRequest, reply: FastifyReply) {
   try {

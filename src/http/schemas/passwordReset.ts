@@ -1,3 +1,7 @@
+// ============================================================================
+// SCHEMAS: Validação de Recuperação de Senha
+// ============================================================================
+
 import { z } from 'zod';
 
 export const solicitarResetSenhaSchema = z.object({

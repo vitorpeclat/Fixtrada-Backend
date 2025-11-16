@@ -1,3 +1,8 @@
+// ============================================================================
+// MIDDLEWARE: Autenticação JWT
+// ============================================================================
+// Valida e extrai informações do token JWT das requisições
+
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 export interface JwtUserPayload {
@@ -7,9 +12,6 @@ export interface JwtUserPayload {
 
 export async function authHook(request: FastifyRequest, reply: FastifyReply) {
   try {
-    // O método jwtVerify() já extrai o token do header "Authorization: Bearer ..."
-    // e o verifica. Se for válido, o payload é retornado.
-    // Se for inválido ou ausente, ele lança um erro que é pego pelo catch.
     const payload = await request.jwtVerify<JwtUserPayload>();
     request.user = payload;
   } catch (error) {

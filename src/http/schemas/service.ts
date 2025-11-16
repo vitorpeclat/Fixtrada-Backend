@@ -1,3 +1,7 @@
+// ============================================================================
+// SCHEMAS: Validação de Solicitação de Serviço
+// ============================================================================
+
 import { z } from 'zod';
 
 export const createServiceRequestSchema = z.object({

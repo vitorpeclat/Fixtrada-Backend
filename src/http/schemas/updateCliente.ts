@@ -1,3 +1,7 @@
+// ============================================================================
+// SCHEMAS: Validação de Atualização de Cliente
+// ============================================================================
+
 import { z } from 'zod';
 
 export const updateClienteSchema = z.object({
