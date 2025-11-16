@@ -1,3 +1,8 @@
+// ============================================================================
+// SEED: Preenchimento de Dados para Testes
+// ============================================================================
+// Script para popular o banco de dados com dados fictícios de teste
+
 import { db } from './connection.ts';
 import { fakerPT_BR as faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
