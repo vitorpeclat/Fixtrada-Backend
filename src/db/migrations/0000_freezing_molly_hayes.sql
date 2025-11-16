@@ -1,4 +1,22 @@
-CREATE TYPE "public"."remetente" AS ENUM('cliente', 'prestador');--> statement-breakpoint
+DROP TYPE IF EXISTS "public"."user_role" CASCADE;
+DROP TYPE IF EXISTS "public"."user_status" CASCADE;
+DROP TYPE IF EXISTS "public"."remetente" CASCADE;
+
+DROP TABLE IF EXISTS "public"."carro" CASCADE;
+DROP TABLE IF EXISTS "public"."chat" CASCADE;
+DROP TABLE IF EXISTS "public"."endereco" CASCADE;
+DROP TABLE IF EXISTS "public"."mensagem" CASCADE;
+DROP TABLE IF EXISTS "public"."prestador_servico" CASCADE;
+DROP TABLE IF EXISTS "public"."registro_servico" CASCADE;
+DROP TABLE IF EXISTS "public"."tipo_servico" CASCADE;
+DROP TABLE IF EXISTS "public"."usuario" CASCADE;
+
+CREATE TYPE "public"."user_role" AS ENUM('cliente', 'prestador', 'admin');
+--> statement-breakpoint
+CREATE TYPE "public"."user_status" AS ENUM('ativo', 'inativo', 'pendente');
+--> statement-breakpoint
+CREATE TYPE "public"."remetente" AS ENUM('cliente', 'prestador');
+--> statement-breakpoint
 CREATE TABLE "carro" (
 	"carID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"carPlaca" varchar(7) NOT NULL,
@@ -45,8 +63,8 @@ CREATE TABLE "prestador_servico" (
 	"mecCNPJ" varchar(14) PRIMARY KEY NOT NULL,
 	"mecNota" double precision,
 	"mecEnderecoNum" integer NOT NULL,
-	"mecLogin" varchar(50) NOT NULL,
-	"mecSenha" text NOT NULL,
+	"mecNome" varchar(100) NOT NULL,
+	"mecDataNasc" date NOT NULL,
 	"mecAtivo" boolean DEFAULT true NOT NULL,
 	"mecFoto" text,
 	"mecVerificado" boolean DEFAULT false,
@@ -57,7 +75,7 @@ CREATE TABLE "prestador_servico" (
 	"latitude" double precision,
 	"longitude" double precision,
 	"fk_endereco_endCEP" varchar(8) NOT NULL,
-	CONSTRAINT "prestador_servico_mecLogin_unique" UNIQUE("mecLogin")
+	"fk_usuario_usuID" uuid NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "registro_servico" (
@@ -91,12 +109,14 @@ CREATE TABLE "usuario" (
 	"usuCpf" varchar(11) NOT NULL,
 	"usuTelefone" text,
 	"usuAtivo" boolean DEFAULT true NOT NULL,
-	"usuRole" varchar(10) DEFAULT 'cliente' NOT NULL,
+	"usuRole" "user_role" DEFAULT 'cliente' NOT NULL,
 	"usuFoto" text,
 	"usuVerificado" boolean DEFAULT false,
 	"usuCodigoVerificacao" text,
 	"usuCodigoVerificacaoExpira" timestamp with time zone,
-	"usu_status" text NOT NULL,
+	"codigoResetSenha" text,
+	"codigoResetSenhaExpira" timestamp with time zone,
+	"usu_status" "user_status" DEFAULT 'ativo' NOT NULL,
 	"usu_data_criacao" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "usuario_usuLogin_unique" UNIQUE("usuLogin"),
 	CONSTRAINT "usuario_usuCpf_unique" UNIQUE("usuCpf")
@@ -108,6 +128,7 @@ ALTER TABLE "chat" ADD CONSTRAINT "chat_fk_prestador_servico_mecCNPJ_prestador_s
 ALTER TABLE "chat" ADD CONSTRAINT "chat_fk_registro_servico_regID_registro_servico_regID_fk" FOREIGN KEY ("fk_registro_servico_regID") REFERENCES "public"."registro_servico"("regID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mensagem" ADD CONSTRAINT "mensagem_fk_chat_chatID_chat_chatID_fk" FOREIGN KEY ("fk_chat_chatID") REFERENCES "public"."chat"("chatID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "prestador_servico" ADD CONSTRAINT "prestador_servico_fk_endereco_endCEP_endereco_endCEP_fk" FOREIGN KEY ("fk_endereco_endCEP") REFERENCES "public"."endereco"("endCEP") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "prestador_servico" ADD CONSTRAINT "prestador_servico_fk_usuario_usuID_usuario_usuID_fk" FOREIGN KEY ("fk_usuario_usuID") REFERENCES "public"."usuario"("usuID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_endereco_endCEP_endereco_endCEP_fk" FOREIGN KEY ("fk_endereco_endCEP") REFERENCES "public"."endereco"("endCEP") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_carro_carID_carro_carID_fk" FOREIGN KEY ("fk_carro_carID") REFERENCES "public"."carro"("carID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk" FOREIGN KEY ("fk_prestador_servico_mecCNPJ") REFERENCES "public"."prestador_servico"("mecCNPJ") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

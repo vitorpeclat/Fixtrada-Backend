@@ -46,7 +46,7 @@ async function seed() {
             endRua: faker.location.street(),
             endBairro: faker.location.secondaryAddress(),
             endCidade: faker.location.city(),
-            endEstado: faker.location.state({ abbreviated: true }),
+            endEstado: 'SP',
         }).returning();
         insertedEnderecos.push(insertedEndereco);
     }
@@ -54,13 +54,28 @@ async function seed() {
 
     // Geração de dados de Usuário
     const plainPassword = '12345aA@';
+    const hashedPassword = await bcrypt.hash(plainPassword, 8);
+
+    // Criar um administrador
+    const [adminUser] = await db.insert(usuario).values({
+        usuID: uuidv4(),
+        usuLogin: 'admin@fixtrada.com',
+        usuSenha: hashedPassword,
+        usuNome: 'Administrador Fixtrada',
+        usuDataNasc: faker.date.birthdate().toISOString(),
+        usuCpf: faker.string.numeric(11),
+        usuTelefone: faker.string.numeric('119########'),
+        usuAtivo: true,
+        usuStatus: 'ativo',
+        usuTipo: 'admin',
+    }).returning();
+    insertedUsuarios.push(adminUser);
+    console.log('1 administrador inserido com sucesso.');
 
     for (let i = 0; i < 5; i++) {
         const fullName = faker.person.fullName();
         const firstName = fullName.split(' ')[0] || `user${i + 1}`;
-        // garantir unicidade do email/login adicionando índice
         const email = `${firstName.toLowerCase()}${i + 1}@email.com`;
-        const hashedPassword = await bcrypt.hash(plainPassword, 8); // Gera um novo hash para cada usuário
 
         const [insertedUsuario] = await db.insert(usuario).values({
             usuID: uuidv4(),
@@ -70,8 +85,9 @@ async function seed() {
             usuDataNasc: faker.date.birthdate().toISOString(),
             usuCpf: faker.string.numeric(11),
             usuTelefone: faker.string.numeric('119########'),
-            usuAtivo: faker.datatype.boolean(),
+            usuAtivo: true,
             usuStatus: 'ativo',
+            usuTipo: 'cliente',
         }).returning();
         insertedUsuarios.push(insertedUsuario);
     }
@@ -100,19 +116,38 @@ async function seed() {
     }
     console.log('10 carros inseridos com sucesso.');
 
-    // Geração de dados de Prestador de Serviço (depende de Endereço)
+    // Geração de dados de Prestador de Serviço (depende de Endereço e Usuário)
     for (let i = 0; i < 3; i++) {
         const enderecoAleatorio = insertedEnderecos[Math.floor(Math.random() * insertedEnderecos.length)];
-        const hashedPassword = await bcrypt.hash(plainPassword, 8); // Gera um novo hash para cada prestador
+        const fullName = faker.person.fullName();
+        const email = `prestador${i + 1}@email.com`;
+
+        const [insertedUsuario] = await db.insert(usuario).values({
+            usuID: uuidv4(),
+            usuLogin: email,
+            usuSenha: hashedPassword,
+            usuNome: fullName,
+            usuDataNasc: faker.date.birthdate().toISOString(),
+            usuCpf: faker.string.numeric(11),
+            usuTelefone: faker.string.numeric('119########'),
+            usuAtivo: true,
+            usuStatus: 'ativo',
+            usuTipo: 'prestador',
+        }).returning();
+        insertedUsuarios.push(insertedUsuario);
+
         const [insertedPrestador] = await db.insert(prestadorServico).values({
             mecCNPJ: faker.string.numeric(14),
             mecNota: faker.number.float({ min: 1, max: 5}),
             mecEnderecoNum: faker.number.int({ min: 100, max: 5000 }),
-            mecLogin: faker.internet.username(),
+            mecNome: fullName,
+            mecDataNasc: faker.date.birthdate().toISOString(),
+            mecLogin: email,
             mecSenha: hashedPassword,
             mecAtivo: true,
             fk_endereco_endCEP: enderecoAleatorio.endCEP,
-        }).returning();
+            fk_usuario_usuID: insertedUsuario.usuID,
+        } as any).returning();
         insertedPrestadores.push(insertedPrestador);
     }
     console.log('3 prestadores de serviço inseridos com sucesso.');
@@ -133,29 +168,50 @@ async function seed() {
         const carroAleatorio = insertedCarros[Math.floor(Math.random() * insertedCarros.length)];
         const prestadorAleatorio = insertedPrestadores[Math.floor(Math.random() * insertedPrestadores.length)];
         const tipoServicoAleatorio = insertedTiposServico[Math.floor(Math.random() * insertedTiposServico.length)];
+        const dataServico = faker.date.past({ years: 1 });
         
         const [insertedRegistro] = await db.insert(registroServico).values({
             regID: uuidv4(),
-            regCodigo: nanoid(), // Gera código único de 8 caracteres
+            regCodigo: nanoid(),
             regDescricao: faker.lorem.sentence(),
-            regData: faker.date.past({ years: 1 }).toISOString().split('T')[0],
-            regHora: faker.date.recent(),
+            regData: dataServico.toISOString().split('T')[0],
+            regHora: dataServico,
             fk_endereco_endCEP: prestadorAleatorio.fk_endereco_endCEP,
             fk_carro_carID: carroAleatorio.carID,
             fk_prestador_servico_mecCNPJ: prestadorAleatorio.mecCNPJ,
             fk_tipo_servico_tseID: tipoServicoAleatorio.tseID,
         }).returning();
-        
+
+        const [insertedChat] = await db.insert(chat).values({
+            chatID: uuidv4(),
+            fk_usuario_usuID: carroAleatorio.fk_usuario_usuID,
+            fk_prestador_servico_mecCNPJ: prestadorAleatorio.mecCNPJ,
+            fk_registro_servico_regID: insertedRegistro.regID,
+        }).returning();
+
+        await db.insert(mensagem).values([
+            {
+                menID: uuidv4(),
+                menConteudo: `Olá, sobre o serviço ${insertedRegistro.regCodigo}.`,
+                fk_remetente_usuID: carroAleatorio.fk_usuario_usuID,
+                fk_chat_chatID: insertedChat.chatID,
+            },
+            {
+                menID: uuidv4(),
+                menConteudo: `Recebido. O que gostaria de saber?`,
+                fk_remetente_usuID: prestadorAleatorio.fk_usuario_usuID,
+                fk_chat_chatID: insertedChat.chatID,
+            }
+        ]);
     }
     console.log('15 registros de serviço e mensagens associadas inseridos com sucesso.');
 
     // Geração de Chats INDEPENDENTES (sem registro de serviço)
     console.log('Iniciando geração de chats independentes (sem serviço)...');
     
-    for (let i = 0; i < 5; i++) { // Adiciona 5 chats independentes
-        const usuarioAleatorio = insertedUsuarios[Math.floor(Math.random() * insertedUsuarios.length)];
+    for (let i = 0; i < 5; i++) {
+        const usuarioAleatorio = insertedUsuarios.filter(u => u.usuTipo === 'cliente')[Math.floor(Math.random() * 5)];
         const prestadorAleatorio = insertedPrestadores[Math.floor(Math.random() * insertedPrestadores.length)];
-        const hashedPassword = await bcrypt.hash(plainPassword, 8); // Gera um novo hash para cada prestador no chat
 
         if (!usuarioAleatorio || !prestadorAleatorio) {
             console.warn("Usuário ou prestador aleatório não encontrado, pulando chat independente.");
@@ -167,21 +223,19 @@ async function seed() {
                 chatID: uuidv4(),
                 fk_usuario_usuID: usuarioAleatorio.usuID,
                 fk_prestador_servico_mecCNPJ: prestadorAleatorio.mecCNPJ,
-                // fk_registro_servico_regID é omitido (será NULL)
             }).returning();
 
-            // Gerar 1 ou 2 mensagens para este chat independente
             await db.insert(mensagem).values([
                 {
                     menID: uuidv4(),
-                    menConteudo: `Olá, ${prestadorAleatorio.mecLogin}, gostaria de um orçamento.`,
+                    menConteudo: `Olá, ${prestadorAleatorio.mecNome}, gostaria de um orçamento.`,
                     fk_remetente_usuID: usuarioAleatorio.usuID,
                     fk_chat_chatID: insertedChat.chatID,
                 },
                 {
                     menID: uuidv4(),
                     menConteudo: `Claro, ${usuarioAleatorio.usuNome}. Do que precisa?`,
-                    fk_remetente_usuID: prestadorAleatorio.mecCNPJ,
+                    fk_remetente_usuID: prestadorAleatorio.fk_usuario_usuID,
                     fk_chat_chatID: insertedChat.chatID,
                 }
             ]);

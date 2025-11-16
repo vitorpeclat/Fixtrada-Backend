@@ -1,5 +1,5 @@
 {
-  "id": "05791e77-90ef-4d74-8df3-b92adc224fa9",
+  "id": "0b312207-89c8-4290-bde4-31fc1bc3ce64",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -334,15 +334,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "mecLogin": {
-          "name": "mecLogin",
-          "type": "varchar(50)",
+        "mecNome": {
+          "name": "mecNome",
+          "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
         },
-        "mecSenha": {
-          "name": "mecSenha",
-          "type": "text",
+        "mecDataNasc": {
+          "name": "mecDataNasc",
+          "type": "date",
           "primaryKey": false,
           "notNull": true
         },
@@ -407,6 +407,12 @@
           "type": "varchar(8)",
           "primaryKey": false,
           "notNull": true
+        },
+        "fk_usuario_usuID": {
+          "name": "fk_usuario_usuID",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -423,18 +429,23 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "prestador_servico_fk_usuario_usuID_usuario_usuID_fk": {
+          "name": "prestador_servico_fk_usuario_usuID_usuario_usuID_fk",
+          "tableFrom": "prestador_servico",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "fk_usuario_usuID"
+          ],
+          "columnsTo": [
+            "usuID"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "prestador_servico_mecLogin_unique": {
-          "name": "prestador_servico_mecLogin_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "mecLogin"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -675,7 +686,8 @@
         },
         "usuRole": {
           "name": "usuRole",
-          "type": "varchar(10)",
+          "type": "user_role",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
           "default": "'cliente'"
@@ -705,11 +717,25 @@
           "primaryKey": false,
           "notNull": false
         },
-        "usu_status": {
-          "name": "usu_status",
+        "codigoResetSenha": {
+          "name": "codigoResetSenha",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
+        },
+        "codigoResetSenhaExpira": {
+          "name": "codigoResetSenhaExpira",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usu_status": {
+          "name": "usu_status",
+          "type": "user_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ativo'"
         },
         "usu_data_criacao": {
           "name": "usu_data_criacao",
@@ -744,6 +770,24 @@
     }
   },
   "enums": {
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": [
+        "cliente",
+        "prestador",
+        "admin"
+      ]
+    },
+    "public.user_status": {
+      "name": "user_status",
+      "schema": "public",
+      "values": [
+        "ativo",
+        "inativo",
+        "pendente"
+      ]
+    },
     "public.remetente": {
       "name": "remetente",
       "schema": "public",
