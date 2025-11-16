@@ -1,3 +1,8 @@
+// ============================================================================
+// SCHEMA: Endereço
+// ============================================================================
+// Tabela de endereços cadastrados no sistema
+
 import { pgTable, text, varchar } from "drizzle-orm/pg-core";
 
 export const endereco = pgTable('endereco', {

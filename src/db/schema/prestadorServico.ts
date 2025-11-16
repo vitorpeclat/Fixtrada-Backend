@@ -1,3 +1,8 @@
+// ============================================================================
+// SCHEMA: Prestador de Serviço
+// ============================================================================
+// Tabela de prestadores de serviço cadastrados
+
 import { boolean, doublePrecision, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { endereco } from "./endereco.ts";
@@ -9,8 +14,7 @@ export const prestadorServico = pgTable('prestador_servico', {
   mecLogin: varchar('mecLogin', { length: 50 }).notNull().unique(),
   mecSenha: text('mecSenha').notNull(),
   mecAtivo: boolean('mecAtivo').notNull().default(true),
-  // LINHA ADICIONADA
-  mecFoto: text('mecFoto'), // Pode ser a URL para a imagem
+  mecFoto: text('mecFoto'),
   mecVerificado: boolean('mecVerificado').default(false),
   mecCodigoVerificacao: text('mecCodigoVerificacao'),
   mecCodigoVerificacaoExpira: timestamp('mecCodigoVerificacaoExpira', { withTimezone: true }),

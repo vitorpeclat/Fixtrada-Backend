@@ -1,3 +1,8 @@
+// ============================================================================
+// SCHEMA: Tipo de Serviço
+// ============================================================================
+// Tabela de tipos/categorias de serviços disponíveis
+
 import { pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const tipoServico = pgTable('tipo_servico', {

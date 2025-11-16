@@ -1,19 +1,23 @@
+// ============================================================================
+// SCHEMA: Registro de Serviço
+// ============================================================================
+// Tabela de serviços solicitados pelos clientes
+
 import { date, pgTable, text, timestamp, uuid, varchar, integer, doublePrecision } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { endereco } from "./endereco.ts";
 import { carro } from "./carro.ts";
 import { tipoServico } from "./tipoServico.ts";
 import { prestadorServico } from "./prestadorServico.ts";
-import { chat } from "./chat.ts"; // Importação adicionada
+import { chat } from "./chat.ts";
 
 export const registroServico = pgTable('registro_servico', {
   regID: uuid('regID').primaryKey().defaultRandom(),
-  // NOVOS CAMPOS ADICIONADOS
-  regCodigo: varchar('regCodigo', { length: 8 }).unique(), // Código único de 8 caracteres
-  regNotaCliente: integer('regNotaCliente'), // Nota que o cliente dará ao serviço
-  regComentarioCliente: text('regComentarioCliente'), // Comentário do cliente sobre o serviço
-  regValor: doublePrecision('regValor'), // Valor do serviço ou visita
-  regStatus: varchar('regStatus', { length: 20 }).notNull().default('pendente'), // pendente, aceito, recusado, em_andamento, concluído, cancelado
+  regCodigo: varchar('regCodigo', { length: 8 }).unique(),
+  regNotaCliente: integer('regNotaCliente'),
+  regComentarioCliente: text('regComentarioCliente'),
+  regValor: doublePrecision('regValor'),
+  regStatus: varchar('regStatus', { length: 20 }).notNull().default('pendente'),
   regDescricao: text('regDescricao').notNull(),
   regData: date('regData').notNull(),
   regHora: timestamp('regHora').notNull(),

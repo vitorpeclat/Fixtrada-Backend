@@ -1,3 +1,8 @@
+// ============================================================================
+// SCHEMA: Carro
+// ============================================================================
+// Tabela de veículos dos clientes
+
 import { boolean, date, integer, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
 import { usuario } from "./usuario.ts";
 import { relations } from "drizzle-orm";
