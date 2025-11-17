@@ -24,6 +24,7 @@ import { confirmarResetSenhaRoutes } from './http/auth/confirmarResetSenha.ts'; 
 import { updatePrestadorRoutes } from './http/prestador/updatePrestador.ts'; // Exemplo
 import { servicosPrestadorRoutes } from './http/prestador/servicosPrestador.ts';
 import { historicoPrestadorRoutes } from './http/prestador/historicoPrestador.ts';
+import { resgatarPrestadoresRoutes } from './http/prestador/resgatarPrestadores.ts';
 import { loginAdminRoutes } from './http/administrador/loginAdmin.ts';
 import { contasAdminRoutes } from './http/administrador/contasAdmin.ts';
 import { tiposServicoAdminRoutes } from './http/administrador/tiposServicoAdmin.ts';
@@ -71,6 +72,7 @@ app.register(confirmarResetSenhaRoutes);
 app.register(updatePrestadorRoutes);
 app.register(servicosPrestadorRoutes);
 app.register(historicoPrestadorRoutes);
+app.register(resgatarPrestadoresRoutes);
 app.register(loginAdminRoutes);
 app.register(contasAdminRoutes);
 app.register(tiposServicoAdminRoutes);

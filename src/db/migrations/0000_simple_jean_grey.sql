@@ -1,4 +1,3 @@
-CREATE TYPE "public"."remetente" AS ENUM('cliente', 'prestador');--> statement-breakpoint
 CREATE TABLE "carro" (
 	"carID" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"carPlaca" varchar(7) NOT NULL,

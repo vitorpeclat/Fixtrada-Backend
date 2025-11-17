@@ -13,6 +13,16 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
     app.post('/vehicle', async (request, reply) => {
             const { sub: userId } = request.user as JwtUserPayload;
             const dadosValidados = vehicleSchema.parse(request.body);
+            
+            // Verificar se já existe um veículo com a mesma placa
+            const existingVehicle = await db.query.carro.findFirst({
+                where: eq(carro.carPlaca, dadosValidados.carPlaca)
+            });
+
+            if (existingVehicle) {
+                return reply.status(409).send({ message: 'Já existe um veículo cadastrado com esta placa.' });
+            }
+
             const [newVehicle] = await db.insert(carro).values({
                 ...dadosValidados,
                 fk_usuario_usuID: userId,
@@ -45,7 +55,7 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
             return reply.status(404).send({ message: 'Veículo não encontrado ou não pertence ao usuário.' });
         }
 
-        const updateVehicleSchema = vehicleSchema.partial();
+        const updateVehicleSchema = vehicleSchema.partial();    
         const dadosValidados = updateVehicleSchema.parse(request.body);
 
         if (Object.keys(dadosValidados).length === 0) {

@@ -111,6 +111,32 @@ async function seed() {
     }
     console.log('3 prestadores de serviço inseridos com sucesso.');
 
+    // Inserir prestador fixo solicitado: Rua Minas Gerais, 107 - Jardim Rosinha, São Paulo - SP
+    // Primeiro garantir endereço específico
+    const enderecoPrestadorFixo = {
+        endCEP: '05274090', // CEP atualizado conforme solicitado
+        endRua: 'Rua Minas Gerais',
+        endBairro: 'Jardim Rosinha',
+        endCidade: 'São Paulo',
+        endEstado: 'SP',
+    };
+
+    const [insertedEnderecoFixo] = await db.insert(endereco).values(enderecoPrestadorFixo).onConflictDoNothing().returning();
+    insertedEnderecos.push(insertedEnderecoFixo);
+
+    // Inserir prestador associado ao endereço fixo
+    const [prestadorFixo] = await db.insert(prestadorServico).values({
+        mecCNPJ: '11111111000191', // CNPJ fictício
+        mecNota: 4.5,
+        mecEnderecoNum: 107,
+        mecLogin: 'minasgerais@prestador.com',
+        mecSenha: hashedPassword,
+        mecAtivo: true,
+        fk_endereco_endCEP: enderecoPrestadorFixo.endCEP,
+    }).returning();
+    insertedPrestadores.push(prestadorFixo);
+    console.log('Prestador fixo (Rua Minas Gerais, 107) inserido com sucesso.');
+
     // Geração de dados de Tipo de Serviço
     const tiposDeProblema = ['Troca de Óleo', 'Revisão Geral', 'Alinhamento e Balanceamento', 'Conserto de Freios'];
     for (const tipo of tiposDeProblema) {
