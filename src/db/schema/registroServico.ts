@@ -23,7 +23,7 @@ export const registroServico = pgTable('registro_servico', {
   fk_tipo_servico_tseID: uuid('fk_tipo_servico_tseID').notNull().references(() => tipoServico.tseID),
 });
 
-export const registroServicoRelations = relations(registroServico, ({ one }) => ({ // 'many' removido se não for usado, 'one' mantido
+export const registroServicoRelations = relations(registroServico, ({ one, many }) => ({
   carro: one(carro, {
     fields: [registroServico.fk_carro_carID],
     references: [carro.carID],
@@ -32,4 +32,5 @@ export const registroServicoRelations = relations(registroServico, ({ one }) => 
     fields: [registroServico.fk_prestador_servico_mecCNPJ],
     references: [prestadorServico.mecCNPJ],
   }),
+  chats: many(chat),
 }));

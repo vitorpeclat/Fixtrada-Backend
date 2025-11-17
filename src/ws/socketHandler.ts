@@ -52,23 +52,42 @@ export function setupSocketIO(io: Server) {
     // --- Eventos de Chat (RF012) ---
 
     // Cliente/Prestador entra em uma sala de chat específica do serviço
-    socket.on('join_service_chat', (serviceId: string) => {
+    // Suporta tanto 'join_service_chat' (backend legacy) quanto 'joinChat' (frontend)
+    async function handleJoin(rawId: string) {
       if (!socket.userId) return; // Precisa estar autenticado
-      socket.join(serviceId);
-      console.log(`Usuário ${socket.userId} entrou no chat do serviço ${serviceId}`);
-      // Opcional: Carregar histórico de mensagens e emitir para o socket que entrou
-      loadAndEmitHistory(socket, serviceId);
-    });
+      // Resolve se o id recebido é um registroServico.regID ou já um chatID
+      let targetChatId = rawId;
+      try {
+        const chatRoom = await db.query.chat.findFirst({
+          where: eq(chat.fk_registro_servico_regID, rawId),
+          columns: { chatID: true }
+        });
+        if (chatRoom && chatRoom.chatID) targetChatId = chatRoom.chatID;
+      } catch (e) {
+        console.warn('Erro ao resolver chat para join:', e);
+      }
+
+      socket.join(targetChatId);
+      console.log(`Usuário ${socket.userId} entrou no chat ${targetChatId} (orig: ${rawId})`);
+      // Carregar histórico de mensagens e emitir para o socket que entrou
+      loadAndEmitHistory(socket, targetChatId);
+    }
+
+    socket.on('join_service_chat', handleJoin);
+    socket.on('joinChat', handleJoin);
 
     // Receber mensagem e retransmitir + salvar no DB
-    socket.on('send_message', async (data: { serviceId: string, senderId: string, senderName?: string, content: string }) => {
-       if (!socket.userId || socket.userId !== data.senderId) {
-            console.error("Tentativa de enviar mensagem por usuário não autorizado ou não correspondente.");
-            return; // Ignora se o senderId não bate com o socket autenticado
-       }
+        socket.on('send_message', async (data: { serviceId?: string, chatId?: string, senderId: string, senderName?: string, content: string }) => {
+        if (!socket.userId || socket.userId !== data.senderId) {
+          console.error("Tentativa de enviar mensagem por usuário não autorizado ou não correspondente.");
+          return; // Ignora se o senderId não bate com o socket autenticado
+        }
 
-      const { serviceId, senderId, content } = data;
-      let senderName = data.senderName;
+       // Aceita tanto 'chatId' quanto 'serviceId' no payload
+       const incomingId = data.chatId ?? data.serviceId;
+       const { senderId, content } = data;
+       let senderName = data.senderName;
+       let targetChatId = incomingId; // Declarar no escopo superior
 
       try {
         if (!senderName) {
@@ -83,39 +102,62 @@ export function setupSocketIO(io: Server) {
           }
         }
 
-        // 1. Encontrar o chatID com base no serviceId (regID)
+        // 1. Encontrar o chatID com base no incomingId (que pode ser regID ou chatID)
         const chatRoom = await db.query.chat.findFirst({
-            where: eq(chat.fk_registro_servico_regID, serviceId),
-            columns: { chatID: true }
+          where: eq(chat.fk_registro_servico_regID, incomingId),
+          columns: { chatID: true }
         });
+        if (chatRoom && chatRoom.chatID) {
+          targetChatId = chatRoom.chatID;
+        }
 
-        if (!chatRoom) {
-            console.error(`Erro: Chat não encontrado para o serviço ${serviceId}`);
-            socket.emit('message_error', { serviceId, error: 'Falha ao encontrar a sala de chat.' });
-            return;
+        if (!targetChatId) {
+          console.error(`Erro: Chat não encontrado para o identificador ${incomingId}`);
+          socket.emit('message_error', { id: incomingId, error: 'Falha ao encontrar a sala de chat.' });
+          return;
         }
 
         // 2. Salvar mensagem no banco (com a correção)
         const [newMessage] = await db.insert(mensagem).values({
-          // Use o nome correto do campo de chave estrangeira conforme definido no seu schema
-          fk_chat_chatID: chatRoom.chatID,
-          menRemetente: socket.userRole === "cliente" ? "cliente" : "prestador", // Garante que nunca seja undefined
+          // Use os campos corretos do schema `mensagem`
+          fk_chat_chatID: targetChatId,
+          fk_remetente_usuID: senderId,
           menConteudo: content,
         }).returning();
 
         // 2. Emitir mensagem para todos na sala do serviço (incluindo o remetente)
-        io.to(serviceId).emit('receive_message', {
-            menID: newMessage.menID,
-            serviceId: serviceId,
-            senderName: senderName,
-            senderId: senderId, // Adiciona o ID do remetente
-            content: content,
-            menData: newMessage.menData,
+        // Emite para a sala identificada pelo chatID/resolvido
+        io.to(targetChatId).emit('receive_message', {
+          menID: newMessage.menID,
+          serviceId: targetChatId,
+          senderName: senderName,
+          senderId: senderId, // Adiciona o ID do remetente
+          content: content,
+          menData: newMessage.menData,
         });
-         console.log(`Mensagem enviada no chat ${serviceId} por ${senderName}`);
+
+        // Emite também o evento clássico que o frontend antigo escutava
+        io.to(targetChatId).emit('newMessage', {
+          id: newMessage.menID,
+          senderId: senderId,
+          content: content,
+          timestamp: newMessage.menData,
+          senderName: senderName,
+          chatId: targetChatId
+        });
+         console.log(`Mensagem enviada no chat ${targetChatId} por ${senderName}`);
 
         // 3. Notificar ambos os usuários (remetente e destinatário) para atualizarem suas listas de chat
-        const service = await db.query.registroServico.findFirst({
+        // Buscar o chat para pegar o registro de serviço associado
+        const chatWithService = await db.query.chat.findFirst({
+            where: eq(chat.chatID, targetChatId),
+            columns: { fk_registro_servico_regID: true }
+        });
+
+        const serviceId = chatWithService?.fk_registro_servico_regID;
+        
+        if (serviceId) {
+          const service = await db.query.registroServico.findFirst({
             where: eq(registroServico.regID, serviceId),
             columns: {
                 fk_carro_carID: true,
@@ -142,12 +184,13 @@ export function setupSocketIO(io: Server) {
                     console.log(`Evento new_chat_activity emitido para ${clienteId} e ${prestadorId}`);
                 }
             }
+          }
         }
 
       } catch (error) {
-        console.error(`Erro ao salvar/emitir mensagem para serviço ${serviceId}:`, error);
+        console.error(`Erro ao salvar/emitir mensagem para o chat ${targetChatId}:`, error);
         // Opcional: Emitir erro de volta para o remetente
-        socket.emit('message_error', { serviceId, error: 'Falha ao enviar mensagem.' });
+        socket.emit('message_error', { chatId: targetChatId, error: 'Falha ao enviar mensagem.' });
       }
     });
 
@@ -163,6 +206,26 @@ export function setupSocketIO(io: Server) {
     // });
 
 
+    // Handlers de leave compatíveis
+    socket.on('leave_service_chat', (rawId: string) => {
+      // resolve e sair da sala, se possível
+      (async () => {
+        try {
+          let target = rawId;
+          const cr = await db.query.chat.findFirst({ where: eq(chat.fk_registro_servico_regID, rawId), columns: { chatID: true } });
+          if (cr && cr.chatID) target = cr.chatID;
+          socket.leave(target);
+          console.log(`Usuário ${socket.userId} saiu da sala ${target} (orig: ${rawId})`);
+        } catch (e) {
+          console.warn('Erro ao processar leave_service_chat:', e);
+        }
+      })();
+    });
+
+    socket.on('leaveChat', (rawId: string) => {
+      socket.emit('leave_service_chat', rawId);
+    });
+
     // Lógica de Desconexão
     socket.on('disconnect', () => {
       console.log(`Usuário desconectado: ${socket.id}, ID: ${socket.userId}`);
@@ -176,30 +239,39 @@ export function setupSocketIO(io: Server) {
 // Função para carregar histórico do chat
 async function loadAndEmitHistory(socket: Socket, serviceId: string) {
     try {
-        const historyDb = await db.query.mensagem.findMany({
-            where: eq(mensagem.fk_chat_chatID, serviceId),
-            orderBy: (fields, { asc }) => [asc(fields.menData)],
-            columns: {
-                menID: true,
-                menConteudo: true,
-                menData: true,
-                menRemetente: true,
-                fk_chat_chatID: true
-            }
-             // Adicione um limit se necessário
-        });
+    // `serviceId` pode ser um `registroServico.regID` ou já o `chatID`.
+    // Primeiro tentamos resolver um chat ligado ao regID; se não existir,
+    // assumimos que `serviceId` já é o chatID.
+    let targetChatId = serviceId;
+    const chatRoom = await db.query.chat.findFirst({
+      where: eq(chat.fk_registro_servico_regID, serviceId),
+      columns: { chatID: true }
+    });
+    if (chatRoom && chatRoom.chatID) {
+      targetChatId = chatRoom.chatID;
+    }
 
-        const history = historyDb.map(msg => ({
-            menID: msg.menID,
-            serviceId: serviceId,
-            senderName: msg.menRemetente,
-            // senderId: msg.menSenderId, // Removido pois não está disponível nos resultados
-            content: msg.menConteudo,
-            menData: msg.menData,
-        }));
+    const historyDb = await db.query.mensagem.findMany({
+      where: eq(mensagem.fk_chat_chatID, targetChatId),
+      orderBy: (fields, { asc }) => [asc(fields.menData)],
+      columns: {
+        menID: true,
+        menConteudo: true,
+        menData: true,
+        fk_remetente_usuID: true,
+        fk_chat_chatID: true
+      }
+    });
 
+    const history = historyDb.map(msg => ({
+      menID: msg.menID,
+      serviceId: targetChatId,
+      senderId: msg.fk_remetente_usuID,
+      content: msg.menConteudo,
+      menData: msg.menData,
+    }));
 
-        socket.emit('chat_history', { serviceId, history });
+    socket.emit('chat_history', { serviceId: targetChatId, history });
     } catch (error) {
         console.error(`Erro ao carregar histórico do chat ${serviceId}:`, error);
         socket.emit('history_error', { serviceId, error: 'Falha ao carregar histórico.' });

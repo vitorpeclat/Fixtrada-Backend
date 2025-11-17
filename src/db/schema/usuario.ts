@@ -1,6 +1,7 @@
 import { boolean, date, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { carro } from "./carro.ts";
+import { chat } from "./chat.ts";
 
 export const usuario = pgTable('usuario', {
   usuID: uuid('usuID').primaryKey().defaultRandom(),
@@ -23,4 +24,5 @@ export const usuario = pgTable('usuario', {
 
 export const usuarioRelations = relations(usuario, ({ many }) => ({
     carros: many(carro),
+    chats: many(chat),
 }));

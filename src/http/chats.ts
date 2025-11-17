@@ -87,18 +87,26 @@ export async function meusChatsRoutes(app: FastifyInstance) {
         const { sub: userId, role } = request.user as JwtUserPayload;
         const { chatId } = request.params;
 
-        // 1. Validação: Buscar o chat e verificar se o usuário logado pertence a ele.
-        const chatDetails = await db.query.chat.findFirst({
-            where: eq(chat.chatID, chatId),
-            with: {
-                cliente: { columns: { usuNome: true } },
-                prestador: { columns: { mecLogin: true } }
-            }
-        });
+        // 1. Validação: Buscar o chat com joins manuais para evitar erro de relação
+        const chatDetailsResult = await db
+            .select({
+                chatID: chat.chatID,
+                fk_usuario_usuID: chat.fk_usuario_usuID,
+                fk_prestador_servico_mecCNPJ: chat.fk_prestador_servico_mecCNPJ,
+                usuNome: usuario.usuNome,
+                mecLogin: prestadorServico.mecLogin,
+            })
+            .from(chat)
+            .leftJoin(usuario, eq(chat.fk_usuario_usuID, usuario.usuID))
+            .leftJoin(prestadorServico, eq(chat.fk_prestador_servico_mecCNPJ, prestadorServico.mecCNPJ))
+            .where(eq(chat.chatID, chatId))
+            .limit(1);
 
-        if (!chatDetails) {
+        if (chatDetailsResult.length === 0) {
             return reply.status(404).send({ message: 'Chat não encontrado.' });
         }
+
+        const chatDetails = chatDetailsResult[0];
 
         // Verifica se o usuário logado é o cliente ou o prestador do chat
         const isParticipant =
@@ -125,10 +133,10 @@ export async function meusChatsRoutes(app: FastifyInstance) {
         let shopName = '';
         if (role === 'cliente') {
             // Se o usuário é cliente, o nome do chat é o do prestador
-            shopName = (chatDetails as any).prestador?.mecLogin ?? 'Prestador';
+            shopName = chatDetails.mecLogin ?? 'Prestador';
         } else if (role === 'prestador') {
             // Se o usuário é prestador, o nome do chat é o do cliente
-            shopName = (chatDetails as any).cliente?.usuNome ?? 'Cliente';
+            shopName = chatDetails.usuNome ?? 'Cliente';
         }
 
         // 4. Retornar os dados no formato esperado pelo frontend

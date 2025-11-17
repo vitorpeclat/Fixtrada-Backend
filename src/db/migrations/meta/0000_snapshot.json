@@ -1,6 +1,6 @@
 {
-  "id": "9eb87ba7-8897-4407-9197-2222d3e3e58c",
-  "prevId": "c434d4a0-6bd1-459a-b4ed-2c308efa5538",
+  "id": "4c0761aa-e8ee-4fb4-96e4-b51ea28ce385",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -714,12 +714,6 @@
         "codigoResetSenhaExpira": {
           "name": "codigoResetSenhaExpira",
           "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dummy": {
-          "name": "dummy",
-          "type": "text",
           "primaryKey": false,
           "notNull": false
         }

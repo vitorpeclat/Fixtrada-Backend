@@ -17,11 +17,11 @@ export const chat = pgTable('chat', {
 });
 
 export const chatRelations = relations(chat, ({ one, many }) => ({
-  usuario: one(usuario, {
+  cliente: one(usuario, {
     fields: [chat.fk_usuario_usuID],
     references: [usuario.usuID],
   }),
-  prestadorServico: one(prestadorServico, {
+  prestador: one(prestadorServico, {
     fields: [chat.fk_prestador_servico_mecCNPJ],
     references: [prestadorServico.mecCNPJ],
   }),

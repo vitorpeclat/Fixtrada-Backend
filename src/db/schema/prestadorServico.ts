@@ -1,6 +1,7 @@
 import { boolean, doublePrecision, integer, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { endereco } from "./endereco.ts";
+import { chat } from "./chat.ts";
 
 export const prestadorServico = pgTable('prestador_servico', {
   mecCNPJ: varchar('mecCNPJ', { length: 14 }).primaryKey(),
@@ -21,9 +22,10 @@ export const prestadorServico = pgTable('prestador_servico', {
   fk_endereco_endCEP: varchar('fk_endereco_endCEP', { length: 8 }).notNull().references(() => endereco.endCEP),
 });
 
-export const prestadorServicoRelations = relations(prestadorServico, ({ one }) => ({
+export const prestadorServicoRelations = relations(prestadorServico, ({ one, many }) => ({
     endereco: one(endereco, {
         fields: [prestadorServico.fk_endereco_endCEP],
         references: [endereco.endCEP],
     }),
+    chats: many(chat),
 }));
