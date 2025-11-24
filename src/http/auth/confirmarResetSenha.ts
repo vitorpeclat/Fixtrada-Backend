@@ -4,15 +4,18 @@ import { db } from '../../db/connection.ts';
 import { usuario } from '../../db/schema/usuario.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { and, eq, gt } from 'drizzle-orm';
-import { confirmarResetSenhaSchema } from '../schemas/passwordReset.ts'; // ajuste o path
+import { validarCodigoSchema } from '../schemas/passwordReset.ts'; // ajuste o path
 import { hash } from 'bcrypt';
 
 export async function confirmarResetSenhaRoutes(app: FastifyInstance) {
   app.post('/password/confirm-reset', async (request, reply) => {
-    const { email, codigo, novaSenha } = confirmarResetSenhaSchema.parse(request.body);
+    console.log('Dados recebidos:', request.body);
+    const { email, codigo} = validarCodigoSchema.parse(request.body);
 
     const agora = new Date();
-
+    console.log('Data atual:', agora.toISOString());
+    console.log('Data atual timestamp:', agora.getTime());
+    
     // Tenta encontrar cliente ou prestador com o código válido e não expirado
     const userCliente = await db.query.usuario.findFirst({
       where: and(
@@ -21,6 +24,9 @@ export async function confirmarResetSenhaRoutes(app: FastifyInstance) {
         gt(usuario.codigoResetSenhaExpira, agora)
       )
     });
+    
+    console.log('userCliente encontrado:', userCliente);
+    console.log('Data de expiração do código:', userCliente?.codigoResetSenhaExpira);
 
     const userPrestador = userCliente ? null : await db.query.prestadorServico.findFirst({
       where: and(
@@ -34,28 +40,6 @@ export async function confirmarResetSenhaRoutes(app: FastifyInstance) {
       return reply.status(400).send({ message: 'Código inválido ou expirado.' });
     }
 
-    try {
-      const novaSenhaHash = await hash(novaSenha, 8);
-
-      if (userCliente) {
-        await db.update(usuario).set({
-          usuSenha: novaSenhaHash,
-          codigoResetSenha: null, // Limpa o código após uso
-          codigoResetSenhaExpira: null,
-        }).where(eq(usuario.usuLogin, email));
-      } else if (userPrestador) {
-        await db.update(prestadorServico).set({
-          mecSenha: novaSenhaHash,
-          codigoResetSenha: null, // Adapte nome do campo
-          codigoResetSenhaExpira: null, // Adapte nome do campo
-        }).where(eq(prestadorServico.mecLogin, email));
-      }
-
-      return reply.status(200).send({ message: 'Senha redefinida com sucesso!' });
-
-    } catch (error) {
-      console.error("Erro ao confirmar reset:", error);
-      return reply.status(500).send({ message: 'Erro ao redefinir a senha.' });
-    }
+    return reply.status(200).send({ message: 'Código válido!' });
   });
 }

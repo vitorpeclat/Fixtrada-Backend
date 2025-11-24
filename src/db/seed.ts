@@ -101,6 +101,7 @@ async function seed() {
         const [insertedPrestador] = await db.insert(prestadorServico).values({
             mecCNPJ: faker.string.numeric(14),
             mecNota: faker.number.float({ min: 1, max: 5}),
+            mecNome: faker.company.name(),
             mecEnderecoNum: faker.number.int({ min: 100, max: 5000 }),
             mecLogin: faker.internet.username(),
             mecSenha: hashedPassword,
@@ -128,6 +129,7 @@ async function seed() {
     const [prestadorFixo] = await db.insert(prestadorServico).values({
         mecCNPJ: '11111111000191', // CNPJ fictício
         mecNota: 4.5,
+        mecNome: 'Oficina Minas Gerais',
         mecEnderecoNum: 107,
         mecLogin: 'minasgerais@prestador.com',
         mecSenha: hashedPassword,

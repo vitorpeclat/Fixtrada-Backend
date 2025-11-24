@@ -21,6 +21,7 @@ import { historicoClienteRoutes } from './http/cliente/historicoCliente.ts';
 import { avaliarServicoRoutes } from './http/cliente/avaliarServico.ts';
 import { solicitarResetSenhaRoutes } from './http/auth/solicitarResetSenha.ts'; // Exemplo
 import { confirmarResetSenhaRoutes } from './http/auth/confirmarResetSenha.ts'; // Exemplo
+import { updateNovaSenhaRoutes } from './http/auth/updateNovaSenha.ts';
 import { updatePrestadorRoutes } from './http/prestador/updatePrestador.ts'; // Exemplo
 import { servicosPrestadorRoutes } from './http/prestador/servicosPrestador.ts';
 import { historicoPrestadorRoutes } from './http/prestador/historicoPrestador.ts';
@@ -69,6 +70,7 @@ app.register(avaliarServicoRoutes);
 // Registre as rotas pendentes implementadas
 app.register(solicitarResetSenhaRoutes);
 app.register(confirmarResetSenhaRoutes);
+app.register(updateNovaSenhaRoutes);
 app.register(updatePrestadorRoutes);
 app.register(servicosPrestadorRoutes);
 app.register(historicoPrestadorRoutes);

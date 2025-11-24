@@ -31,3 +31,11 @@ export const loginSchema = z.object({
     login: z.string().email('O e-mail é obrigatório e deve ser válido.'),
     senha: z.string().min(1, 'A senha é obrigatória.'),
 });
+
+export const loginPrestador = z.object({
+  login: z.string().optional(),
+  senha: z.string().optional(),
+  codigoServico: z.string().optional(),
+}).refine(d => d.codigoServico || (d.login && d.senha), {
+  message: 'Forneça login+senha ou codigoServico.',
+});

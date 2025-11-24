@@ -216,8 +216,6 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             tipoServico: tipoServicoRelacionado || null,
             prestador: prestadorRelacionado || null
         };
-
-        console.log('Card do serviço retornado:', card);
         return reply.send(card);
     });
 
