@@ -54,12 +54,14 @@ export async function updateNovaSenhaRoutes(app: FastifyInstance) {
 
   // Rota para alteração simples de senha (fornece senha atual e nova senha)
   app.post('/password/change', async (request, reply) => {
-    const { email, senhaAtual, novaSenha } = alterarSenhaSimplesSchema.parse(request.body);
+    const { email, role, senhaAtual, novaSenha } = alterarSenhaSimplesSchema.parse(request.body);
 
     try {
-      // Verifica se é cliente
-      const userCliente = await db.query.usuario.findFirst({ where: eq(usuario.usuLogin, email) });
-      if (userCliente) {
+      if (role === 'cliente') {
+        const userCliente = await db.query.usuario.findFirst({ where: eq(usuario.usuLogin, email) });
+        if (!userCliente) {
+          return reply.status(404).send({ message: 'Usuário não encontrado.' });
+        }
         const senhaValida = await compare(senhaAtual, userCliente.usuSenha);
         if (!senhaValida) {
           return reply.status(400).send({ message: 'Senha atual incorreta.' });
@@ -67,11 +69,11 @@ export async function updateNovaSenhaRoutes(app: FastifyInstance) {
         const novaHash = await hash(novaSenha, 8);
         await db.update(usuario).set({ usuSenha: novaHash }).where(eq(usuario.usuLogin, email));
         return reply.status(200).send({ message: 'Senha alterada com sucesso.' });
-      }
-
-      // Verifica se é prestador
-      const userPrestador = await db.query.prestadorServico.findFirst({ where: eq(prestadorServico.mecLogin, email) });
-      if (userPrestador) {
+      } else if (role === 'prestador') {
+        const userPrestador = await db.query.prestadorServico.findFirst({ where: eq(prestadorServico.mecLogin, email) });
+        if (!userPrestador) {
+          return reply.status(404).send({ message: 'Prestador não encontrado.' });
+        }
         const senhaValida = await compare(senhaAtual, userPrestador.mecSenha);
         if (!senhaValida) {
           return reply.status(400).send({ message: 'Senha atual incorreta.' });
@@ -81,9 +83,9 @@ export async function updateNovaSenhaRoutes(app: FastifyInstance) {
         return reply.status(200).send({ message: 'Senha alterada com sucesso.' });
       }
 
-      return reply.status(404).send({ message: 'Usuário não encontrado.' });
+      return reply.status(400).send({ message: 'Role inválida.' });
     } catch (error) {
-      console.error('Erro ao alterar senha simples:', error);
+      console.error('Erro ao alterar senha:', error);
       return reply.status(500).send({ message: 'Erro ao alterar a senha.' });
     }
   });

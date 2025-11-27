@@ -18,6 +18,7 @@ export const confirmarResetSenhaSchema = z.object({
 
 export const alterarSenhaSimplesSchema = z.object({
   email: z.string().email('Formato de e-mail inválido.'),
+  role: z.enum(['cliente', 'prestador'], { message: 'Role deve ser "cliente" ou "prestador".' }),
   senhaAtual: z.string().min(1, 'Senha atual obrigatória.'),
   novaSenha: z.string()
     .min(8, 'A nova senha deve ter no mínimo 8 caracteres.')

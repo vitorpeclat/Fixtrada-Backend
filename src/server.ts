@@ -23,6 +23,7 @@ import { solicitarResetSenhaRoutes } from './http/auth/solicitarResetSenha.ts'; 
 import { confirmarResetSenhaRoutes } from './http/auth/confirmarResetSenha.ts'; // Exemplo
 import { updateNovaSenhaRoutes } from './http/auth/updateNovaSenha.ts';
 import { updatePrestadorRoutes } from './http/prestador/updatePrestador.ts'; // Exemplo
+import { verificacaoEmailPrestadorRoutes } from './http/prestador/verificacaoEmail.ts';
 import { servicosPrestadorRoutes } from './http/prestador/servicosPrestador.ts';
 import { historicoPrestadorRoutes } from './http/prestador/historicoPrestador.ts';
 import { resgatarPrestadoresRoutes } from './http/prestador/resgatarPrestadores.ts';
@@ -72,6 +73,7 @@ app.register(solicitarResetSenhaRoutes);
 app.register(confirmarResetSenhaRoutes);
 app.register(updateNovaSenhaRoutes);
 app.register(updatePrestadorRoutes);
+app.register(verificacaoEmailPrestadorRoutes);
 app.register(servicosPrestadorRoutes);
 app.register(historicoPrestadorRoutes);
 app.register(resgatarPrestadoresRoutes);

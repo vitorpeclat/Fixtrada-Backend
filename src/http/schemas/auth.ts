@@ -12,6 +12,7 @@ export const criarClienteSchema = z.object({
 });
 
 export const criarPrestadorSchema = z.object({
+  mecNome: z.string().min(3, 'O nome é obrigatório.'),
   mecCNPJ: z.string().length(14, 'O CNPJ deve ter 14 dígitos.'),
   mecLogin: z.string().email('Formato de e-mail inválido.'),
   mecSenha: z.string()

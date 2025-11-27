@@ -57,7 +57,8 @@ export async function loginPrestadorRoutes(app: FastifyInstance) {
       token,
       user: {
         id: user.mecCNPJ,
-        nome: user.mecLogin,
+        nome: user.mecNome,
+        email: user.mecLogin,
         role: 'prestador',
         viaCodigoServico: viaCodigo,
         codigoServico: viaCodigo ? codigoServico : undefined,
