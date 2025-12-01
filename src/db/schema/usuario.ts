@@ -3,6 +3,8 @@ import { relations } from "drizzle-orm";
 import { carro } from "./carro.ts";
 import { chat } from "./chat.ts";
 
+// Campo de foto será armazenado como Base64 em texto.
+
 export const usuario = pgTable('usuario', {
   usuID: uuid('usuID').primaryKey().defaultRandom(),
   usuLogin: varchar('usuLogin', { length: 50 }).notNull().unique(),
@@ -13,8 +15,8 @@ export const usuario = pgTable('usuario', {
   usuTelefone: text('usuTelefone'),
   usuAtivo: boolean('usuAtivo').notNull().default(true),
   usuRole: varchar('usuRole', { length: 10 }).notNull().default('cliente'), // cliente, admin
-  // LINHA ADICIONADA
-  usuFoto: text('usuFoto'), // Pode ser a URL para a imagem
+  // LINHA ADICIONADA (Base64)
+  usuFoto: text('usuFoto'), // Armazena string Base64 da foto
   usuVerificado: boolean('usuVerificado').default(false),
   usuCodigoVerificacao: text('usuCodigoVerificacao'),
   usuCodigoVerificacaoExpira: timestamp('usuCodigoVerificacaoExpira', { withTimezone: true }),

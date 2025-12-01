@@ -66,7 +66,6 @@ export async function vehicleClienteRoutes(app: FastifyInstance) {
             .set(dadosValidados)
             .where(eq(carro.carID, vehicleId))
             .returning();
-
         return reply.send(updatedVehicle);
     });
 

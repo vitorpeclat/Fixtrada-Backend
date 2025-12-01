@@ -54,4 +54,36 @@ export async function resgatarPrestadoresRoutes(app: FastifyInstance) {
 
     return reply.send(prestadores);
   });
+
+  // Rota para buscar um prestador específico pelo CNPJ
+  app.get('/prestadores/:cnpj', async (request, reply) => {
+    const paramsSchema = z.object({
+      cnpj: z.string().length(14, 'CNPJ deve ter 14 caracteres'),
+    });
+
+    const { cnpj } = paramsSchema.parse(request.params);
+
+    const prestador = await db.query.prestadorServico.findFirst({
+      where: eq(prestadorServico.mecCNPJ, cnpj),
+      columns: {
+        mecCNPJ: true,
+        mecLogin: true,
+        mecNome: true,
+        mecNota: true,
+        mecEnderecoNum: true,
+        mecAtivo: true,
+        mecFoto: true,
+        mecVerificado: true,
+        latitude: true,
+        longitude: true,
+        fk_endereco_endCEP: true,
+      },
+    });
+
+    if (!prestador) {
+      return reply.status(404).send({ error: 'Prestador não encontrado' });
+    }
+
+    return reply.send(prestador);
+  });
 }

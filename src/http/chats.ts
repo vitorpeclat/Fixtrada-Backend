@@ -7,6 +7,7 @@ import { usuario } from '../db/schema/usuario.ts';
 import { authHook, JwtUserPayload } from './hooks/auth.ts';
 import { chat } from '../db/schema/chat.ts'; // IMPORTADO 'chat'
 import { registroServico } from '../db/schema/registroServico.ts';
+import { z } from 'zod';
 
 // Define o tipo para os parâmetros da rota de mensagens
 type GetChatMessagesParams = {
@@ -15,6 +16,71 @@ type GetChatMessagesParams = {
 
 export async function meusChatsRoutes(app: FastifyInstance) {
     app.addHook('onRequest', authHook);
+
+    // Cria um chat entre cliente e prestador (sem vínculo de serviço)
+    app.post('/chats', async (request, reply) => {
+        const bodySchema = z.object({
+            clienteId: z.string().uuid(),
+            prestadorCnpj: z.string().length(14),
+        });
+
+        const { clienteId, prestadorCnpj } = bodySchema.parse(request.body);
+
+        // Verifica se já existe um chat entre esses participantes sem serviço vinculado
+        const existente = await db.query.chat.findFirst({
+            where: (fields, { and }) => and(
+                eq(chat.fk_usuario_usuID, clienteId),
+                eq(chat.fk_prestador_servico_mecCNPJ, prestadorCnpj),
+                isNull(chat.fk_registro_servico_regID)
+            ),
+            columns: { chatID: true },
+        });
+
+        if (existente) {
+            return reply.status(200).send({ chatID: existente.chatID, criado: false });
+        }
+
+        const inserted = await db.insert(chat).values({
+            fk_usuario_usuID: clienteId,
+            fk_prestador_servico_mecCNPJ: prestadorCnpj,
+            // fk_registro_servico_regID permanece null
+        }).returning({ chatID: chat.chatID });
+
+        return reply.status(201).send({ chatID: inserted[0].chatID, criado: true });
+    });
+
+    // Cria um chat entre cliente e prestador vinculado a um registro de serviço
+    app.post('/chats/servico', async (request, reply) => {
+        const bodySchema = z.object({
+            clienteId: z.string().uuid(),
+            prestadorCnpj: z.string().length(14),
+            registroServicoId: z.string().uuid(),
+        });
+
+        const { clienteId, prestadorCnpj, registroServicoId } = bodySchema.parse(request.body);
+
+        // Verifica se já existe um chat para esse serviço com os mesmos participantes
+        const existente = await db.query.chat.findFirst({
+            where: (fields, { and }) => and(
+                eq(chat.fk_usuario_usuID, clienteId),
+                eq(chat.fk_prestador_servico_mecCNPJ, prestadorCnpj),
+                eq(chat.fk_registro_servico_regID, registroServicoId)
+            ),
+            columns: { chatID: true },
+        });
+
+        if (existente) {
+            return reply.status(200).send({ chatID: existente.chatID, criado: false });
+        }
+
+        const inserted = await db.insert(chat).values({
+            fk_usuario_usuID: clienteId,
+            fk_prestador_servico_mecCNPJ: prestadorCnpj,
+            fk_registro_servico_regID: registroServicoId,
+        }).returning({ chatID: chat.chatID });
+
+        return reply.status(201).send({ chatID: inserted[0].chatID, criado: true });
+    });
 
     app.get('/cliente/meus-chats', async (request, reply) => {
         const { sub: userId, role } = request.user as JwtUserPayload;
