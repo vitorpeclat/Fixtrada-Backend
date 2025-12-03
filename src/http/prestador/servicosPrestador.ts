@@ -24,6 +24,9 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
                 eq(registroServico.regStatus, 'pendente'),
                 isNull(registroServico.fk_prestador_servico_mecCNPJ)
             ),
+            with: {
+                tipoServico: true
+            },
             orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
         });
 
@@ -133,5 +136,18 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
             .returning();
 
         return reply.send(updatedService);
+    });
+
+    // Resgatar todos os serviços associados ao prestador (todos os status)
+    app.get('/prestador/servicos/meus', { preHandler: [isPrestador] }, async (request, reply) => {
+        const { sub: prestadorId } = request.user as JwtUserPayload;
+        console.log('Prestador ID recebido:', prestadorId);
+
+        const meusServicos = await db.query.registroServico.findMany({
+            where: eq(registroServico.fk_prestador_servico_mecCNPJ, prestadorId),
+            orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
+        });
+
+        return reply.send(meusServicos);
     });
 }
