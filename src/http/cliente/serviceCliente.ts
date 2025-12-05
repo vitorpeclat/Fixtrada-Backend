@@ -263,4 +263,161 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             servico: servicoAtualizado
         });
     });
+
+    // Rota para resgatar os serviços com status de "proposta"
+    app.get('/services/proposta/list', async (request, reply) => {
+        const user = request.user as JwtUserPayload;
+        if (!user || user.role !== 'cliente') {
+            return reply.status(403).send({ message: 'Acesso negado.' });
+        }
+
+        // Buscar todos os carros do cliente
+        const carros = await db.query.carro.findMany({
+            where: eq(carro.fk_usuario_usuID, user.sub)
+        });
+        const carrosIds = carros.map(c => c.carID);
+        if (carrosIds.length === 0) {
+            return reply.send([]);
+        }
+
+        // Buscar todos os serviços com status "proposta" vinculados aos carros do cliente
+        const servicos = await db.query.registroServico.findMany({
+            where: (fields, { inArray, eq: eqOp }) => 
+                inArray(fields.fk_carro_carID, carrosIds) && eqOp(fields.regStatus, 'proposta'),
+            orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
+        });
+        if (servicos.length === 0) {
+            return reply.send([]);
+        }
+
+        // Coletar todos os IDs relacionados
+        const carroIdsSet = new Set(servicos.map(s => s.fk_carro_carID));
+        const tipoServicoIdsSet = new Set(servicos.map(s => s.fk_tipo_servico_tseID));
+        const prestadorCnpjsSet = new Set(servicos.map(s => s.fk_prestador_servico_mecCNPJ).filter(Boolean));
+
+        // Buscar dados relacionados em batch
+        const [carrosRelacionados, tiposServicoRelacionados, prestadoresRelacionados] = await Promise.all([
+            db.query.carro.findMany({ where: (fields, { inArray }) => inArray(fields.carID, Array.from(carroIdsSet)) }),
+            db.query.tipoServico.findMany({ where: (fields, { inArray }) => inArray(fields.tseID, Array.from(tipoServicoIdsSet)) }),
+            prestadorCnpjsSet.size > 0 
+                ? db.query.prestadorServico.findMany({ where: (fields, { inArray }) => inArray(fields.mecCNPJ, Array.from(prestadorCnpjsSet) as string[]) })
+                : []
+        ]);
+
+        // Mapear para acesso rápido
+        const carrosMap = new Map(carrosRelacionados.map(c => [c.carID, c]));
+        const tiposServicoMap = new Map(tiposServicoRelacionados.map(t => [t.tseID, t]));
+        const prestadoresMap = new Map(prestadoresRelacionados.map(p => [p.mecCNPJ, p]));
+
+        // Montar array de cards
+        const cards = servicos.map(servico => ({
+            id: servico.regID,
+            codigo: servico.regCodigo,
+            status: servico.regStatus,
+            descricao: servico.regDescricao,
+            data: servico.regData,
+            hora: servico.regHora,
+            valor: servico.regValor,
+            notaCliente: servico.regNotaCliente,
+            comentarioCliente: servico.regComentarioCliente,
+            carro: carrosMap.get(servico.fk_carro_carID) || null,
+            tipoServico: tiposServicoMap.get(servico.fk_tipo_servico_tseID) || null,
+            prestador: servico.fk_prestador_servico_mecCNPJ ? prestadoresMap.get(servico.fk_prestador_servico_mecCNPJ) || null : null
+        }));
+
+        return reply.send(cards);
+    });
+
+    // Rota para aceitar a proposta de um serviço
+    app.post('/services/:id/aceitar-proposta', async (request, reply) => {
+        const { id } = request.params as { id: string };
+        const user = request.user as JwtUserPayload;
+        
+        if (!user || user.role !== 'cliente') {
+            return reply.status(403).send({ message: 'Acesso negado.' });
+        }
+
+        // Buscar o serviço
+        const servico = await db.query.registroServico.findFirst({
+            where: eq(registroServico.regID, id)
+        });
+
+        if (!servico) {
+            return reply.status(404).send({ message: 'Serviço não encontrado.' });
+        }
+
+        // Verificar se o serviço pertence a um carro do cliente
+        const carroDono = await db.query.carro.findFirst({
+            where: eq(carro.carID, servico.fk_carro_carID)
+        });
+
+        if (!carroDono || carroDono.fk_usuario_usuID !== user.sub) {
+            return reply.status(403).send({ message: 'Você não tem permissão para aceitar esta proposta.' });
+        }
+
+        // Verificar se o serviço está com status "proposta"
+        if (servico.regStatus !== 'proposta') {
+            return reply.status(400).send({ message: `Não é possível aceitar uma proposta para um serviço com status "${servico.regStatus}".` });
+        }
+
+        // Atualizar o status do serviço para "em_andamento"
+        const [servicoAtualizado] = await db
+            .update(registroServico)
+            .set({ regStatus: 'em_andamento' })
+            .where(eq(registroServico.regID, id))
+            .returning();
+
+        return reply.send({
+            message: 'Proposta aceita com sucesso. Serviço em andamento.',
+            servico: servicoAtualizado
+        });
+    });
+
+    // Rota para recusar a proposta de um serviço
+    app.post('/services/:id/recusar-proposta', async (request, reply) => {
+        const { id } = request.params as { id: string };
+        const user = request.user as JwtUserPayload;
+        
+        if (!user || user.role !== 'cliente') {
+            return reply.status(403).send({ message: 'Acesso negado.' });
+        }
+
+        // Buscar o serviço
+        const servico = await db.query.registroServico.findFirst({
+            where: eq(registroServico.regID, id)
+        });
+
+        if (!servico) {
+            return reply.status(404).send({ message: 'Serviço não encontrado.' });
+        }
+
+        // Verificar se o serviço pertence a um carro do cliente
+        const carroDono = await db.query.carro.findFirst({
+            where: eq(carro.carID, servico.fk_carro_carID)
+        });
+
+        if (!carroDono || carroDono.fk_usuario_usuID !== user.sub) {
+            return reply.status(403).send({ message: 'Você não tem permissão para recusar esta proposta.' });
+        }
+
+        // Verificar se o serviço está com status "proposta"
+        if (servico.regStatus !== 'proposta') {
+            return reply.status(400).send({ message: `Não é possível recusar uma proposta para um serviço com status "${servico.regStatus}".` });
+        }
+
+        // Atualizar o serviço: remover prestador e alterar status para "pendente"
+        const [servicoAtualizado] = await db
+            .update(registroServico)
+            .set({ 
+                regStatus: 'pendente',
+                fk_prestador_servico_mecCNPJ: null
+            })
+            .where(eq(registroServico.regID, id))
+            .returning();
+
+        return reply.send({
+            message: 'Proposta recusada com sucesso. Serviço retornou ao status pendente.',
+            servico: servicoAtualizado
+        });
+    });
 }
