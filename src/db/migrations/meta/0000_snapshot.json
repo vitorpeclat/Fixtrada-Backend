@@ -1,5 +1,5 @@
 {
-  "id": "dc48aecb-4b36-4310-9673-dbb8fd13c53d",
+  "id": "bc45d95d-6ddd-4860-94c0-92b95379ffb1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -505,9 +505,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "fk_endereco_endCEP": {
-          "name": "fk_endereco_endCEP",
-          "type": "varchar(8)",
+        "regLatitude": {
+          "name": "regLatitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "regLongitude": {
+          "name": "regLongitude",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": true
         },
@@ -532,19 +538,6 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "registro_servico_fk_endereco_endCEP_endereco_endCEP_fk": {
-          "name": "registro_servico_fk_endereco_endCEP_endereco_endCEP_fk",
-          "tableFrom": "registro_servico",
-          "tableTo": "endereco",
-          "columnsFrom": [
-            "fk_endereco_endCEP"
-          ],
-          "columnsTo": [
-            "endCEP"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "registro_servico_fk_carro_carID_carro_carID_fk": {
           "name": "registro_servico_fk_carro_carID_carro_carID_fk",
           "tableFrom": "registro_servico",
@@ -720,6 +713,18 @@
         "codigoResetSenhaExpira": {
           "name": "codigoResetSenhaExpira",
           "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "latitude": {
+          "name": "latitude",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "double precision",
           "primaryKey": false,
           "notNull": false
         }

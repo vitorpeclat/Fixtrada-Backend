@@ -2,6 +2,7 @@
 
 import Fastify from 'fastify';
 import jwt from '@fastify/jwt';
+import cors from '@fastify/cors';
 import fastifyIO from 'fastify-socket.io'; // <<< Importar o plugin
 // Remova: import websocketPlugin from '@fastify/websocket';
 // Remova: import { Server } from 'socket.io'; // O tipo pode vir de fastify.d.ts agora
@@ -39,6 +40,13 @@ import { enderecosRoutes } from './http/enderecos.ts';
 import { z } from 'zod';
 
 const app = Fastify({ logger: true });
+
+// Registra o plugin CORS para permitir requisições do frontend
+app.register(cors, {
+  origin: ['http://localhost:5173'], // Em produção, especifique os domínios permitidos, ex: ['http://localhost:3000', 'https://seuapp.com']
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+});
 
 // Registra o plugin JWT
 app.register(jwt, {

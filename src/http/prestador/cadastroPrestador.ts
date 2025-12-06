@@ -45,6 +45,8 @@ export async function cadastroPrestadorRoutes(app: FastifyInstance) {
           mecSenha: senhaHash,
           mecEnderecoNum: dadosValidados.mecEnderecoNum,
           fk_endereco_endCEP: dadosValidados.endereco.endCEP,
+          latitude: dadosValidados.latitude,
+          longitude: dadosValidados.longitude,
           mecAtivo: true,
           mecCodigoVerificacao: codigoVerificacao,
           mecCodigoVerificacaoExpira: mecCodigoVerificacaoExpira,

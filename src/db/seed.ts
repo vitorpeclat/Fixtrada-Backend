@@ -192,7 +192,6 @@ async function seed() {
             : null;
         
         await db.insert(registroServico).values({
-            regID: uuidv4(),
             regCodigo: nanoid(),
             regDescricao: faker.lorem.sentence(),
             regData: faker.date.past({ years: 1 }).toISOString().split('T')[0],
@@ -201,7 +200,8 @@ async function seed() {
             regValor: valor,
             regNotaCliente: notaCliente,
             regComentarioCliente: comentarioCliente,
-            fk_endereco_endCEP: enderecoAleatorio.endCEP,
+            regLatitude: faker.location.latitude(),
+            regLongitude: faker.location.longitude(),
             fk_carro_carID: carroAleatorio.carID,
             fk_prestador_servico_mecCNPJ: prestadorAleatorio?.mecCNPJ || null,
             fk_tipo_servico_tseID: tipoServicoAleatorio.tseID,

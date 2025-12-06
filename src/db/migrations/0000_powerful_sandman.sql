@@ -70,7 +70,8 @@ CREATE TABLE "registro_servico" (
 	"regDescricao" text NOT NULL,
 	"regData" date NOT NULL,
 	"regHora" timestamp NOT NULL,
-	"fk_endereco_endCEP" varchar(8) NOT NULL,
+	"regLatitude" double precision NOT NULL,
+	"regLongitude" double precision NOT NULL,
 	"fk_carro_carID" uuid NOT NULL,
 	"fk_prestador_servico_mecCNPJ" varchar(14),
 	"fk_tipo_servico_tseID" uuid NOT NULL,
@@ -98,6 +99,8 @@ CREATE TABLE "usuario" (
 	"usuCodigoVerificacaoExpira" timestamp with time zone,
 	"codigoResetSenha" text,
 	"codigoResetSenhaExpira" timestamp with time zone,
+	"latitude" double precision,
+	"longitude" double precision,
 	CONSTRAINT "usuario_usuLogin_unique" UNIQUE("usuLogin"),
 	CONSTRAINT "usuario_usuCpf_unique" UNIQUE("usuCpf")
 );
@@ -108,7 +111,6 @@ ALTER TABLE "chat" ADD CONSTRAINT "chat_fk_prestador_servico_mecCNPJ_prestador_s
 ALTER TABLE "chat" ADD CONSTRAINT "chat_fk_registro_servico_regID_registro_servico_regID_fk" FOREIGN KEY ("fk_registro_servico_regID") REFERENCES "public"."registro_servico"("regID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mensagem" ADD CONSTRAINT "mensagem_fk_chat_chatID_chat_chatID_fk" FOREIGN KEY ("fk_chat_chatID") REFERENCES "public"."chat"("chatID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "prestador_servico" ADD CONSTRAINT "prestador_servico_fk_endereco_endCEP_endereco_endCEP_fk" FOREIGN KEY ("fk_endereco_endCEP") REFERENCES "public"."endereco"("endCEP") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_endereco_endCEP_endereco_endCEP_fk" FOREIGN KEY ("fk_endereco_endCEP") REFERENCES "public"."endereco"("endCEP") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_carro_carID_carro_carID_fk" FOREIGN KEY ("fk_carro_carID") REFERENCES "public"."carro"("carID") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_prestador_servico_mecCNPJ_prestador_servico_mecCNPJ_fk" FOREIGN KEY ("fk_prestador_servico_mecCNPJ") REFERENCES "public"."prestador_servico"("mecCNPJ") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registro_servico" ADD CONSTRAINT "registro_servico_fk_tipo_servico_tseID_tipo_servico_tseID_fk" FOREIGN KEY ("fk_tipo_servico_tseID") REFERENCES "public"."tipo_servico"("tseID") ON DELETE no action ON UPDATE no action;

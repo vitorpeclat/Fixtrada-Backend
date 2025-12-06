@@ -37,8 +37,14 @@ export async function cadastroClienteRoutes(app: FastifyInstance) {
       const usuCodigoVerificacaoExpira = new Date(agora.getTime() + 60 * 60 * 1000); // 1 hora
 
       const [newUser] = await db.insert(usuario).values({
-          ...dadosValidados,
+          usuLogin: dadosValidados.usuLogin,
           usuSenha: senhaHash,
+          usuNome: dadosValidados.usuNome,
+          usuDataNasc: dadosValidados.usuDataNasc,
+          usuCpf: dadosValidados.usuCpf,
+          usuTelefone: dadosValidados.usuTelefone,
+          latitude: dadosValidados.latitude,
+          longitude: dadosValidados.longitude,
           usuAtivo: true,
           usuCodigoVerificacao: codigoVerificacao,
           usuCodigoVerificacaoExpira: usuCodigoVerificacaoExpira,

@@ -39,6 +39,8 @@ export async function updatePrestadorRoutes(app: FastifyInstance) {
     const updates: Partial<typeof prestadorServico.$inferInsert> = {};
     if (dados.mecFoto) updates.mecFoto = dados.mecFoto;
     if (dados.mecEnderecoNum) updates.mecEnderecoNum = dados.mecEnderecoNum;
+    if (typeof dados.latitude !== 'undefined') updates.latitude = dados.latitude;
+    if (typeof dados.longitude !== 'undefined') updates.longitude = dados.longitude;
 
     try {
         const [updated] = await db.update(prestadorServico)
@@ -48,6 +50,8 @@ export async function updatePrestadorRoutes(app: FastifyInstance) {
               mecCNPJ: prestadorServico.mecCNPJ,
               mecFoto: prestadorServico.mecFoto,
               mecEnderecoNum: prestadorServico.mecEnderecoNum,
+              latitude: prestadorServico.latitude,
+              longitude: prestadorServico.longitude,
             });
 
         if (!updated) {

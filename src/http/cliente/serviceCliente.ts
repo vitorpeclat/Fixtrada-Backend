@@ -10,7 +10,6 @@ import { emitNewServiceNotification } from '../../ws/socketHandler.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { carro } from '../../db/schema/carro.ts';
 import { tipoServico } from '../../db/schema/tipoServico.ts';
-import { endereco } from '../../db/schema/endereco.ts';
 
 const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 
@@ -47,17 +46,6 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             return reply.status(404).send({ message: 'Tipo de serviço não encontrado.' });
         }
 
-        // Validar se o CEP existe no banco de dados
-        const enderecoExiste = await db.query.endereco.findFirst({
-            where: eq(endereco.endCEP, dadosValidados.fk_endereco_endCEP)
-        });
-
-        if (!enderecoExiste) {
-            return reply.status(404).send({ 
-                message: 'CEP não encontrado no banco de dados. Por favor, cadastre o endereço primeiro.' 
-            });
-        }
-
         // Se foi especificado um prestador, validar se ele existe
         if (dadosValidados.fk_prestador_servico_mecCNPJ) {
             const prestadorExiste = await db.query.prestadorServico.findFirst({
@@ -73,7 +61,8 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             regDescricao: dadosValidados.regDescricao,
             fk_carro_carID: dadosValidados.fk_carro_carID,
             fk_tipo_servico_tseID: dadosValidados.fk_tipo_servico_tseID,
-            fk_endereco_endCEP: dadosValidados.fk_endereco_endCEP,
+            regLatitude: dadosValidados.regLatitude,
+            regLongitude: dadosValidados.regLongitude,
             fk_prestador_servico_mecCNPJ: dadosValidados.fk_prestador_servico_mecCNPJ || null, // Opcional
             regCodigo: nanoid(), // Gera código único
             regData: new Date().toISOString().split('T')[0],
@@ -154,6 +143,8 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             valor: servico.regValor,
             notaCliente: servico.regNotaCliente,
             comentarioCliente: servico.regComentarioCliente,
+            latitude: servico.regLatitude,
+            longitude: servico.regLongitude,
             carro: carrosMap.get(servico.fk_carro_carID) || null,
             tipoServico: tiposServicoMap.get(servico.fk_tipo_servico_tseID) || null,
             prestador: servico.fk_prestador_servico_mecCNPJ ? prestadoresMap.get(servico.fk_prestador_servico_mecCNPJ) || null : null
@@ -212,6 +203,8 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             valor: servico.regValor,
             notaCliente: servico.regNotaCliente,
             comentarioCliente: servico.regComentarioCliente,
+            latitude: servico.regLatitude,
+            longitude: servico.regLongitude,
             carro: carroRelacionado || null,
             tipoServico: tipoServicoRelacionado || null,
             prestador: prestadorRelacionado || null
@@ -320,6 +313,8 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             valor: servico.regValor,
             notaCliente: servico.regNotaCliente,
             comentarioCliente: servico.regComentarioCliente,
+            latitude: servico.regLatitude,
+            longitude: servico.regLongitude,
             carro: carrosMap.get(servico.fk_carro_carID) || null,
             tipoServico: tiposServicoMap.get(servico.fk_tipo_servico_tseID) || null,
             prestador: servico.fk_prestador_servico_mecCNPJ ? prestadoresMap.get(servico.fk_prestador_servico_mecCNPJ) || null : null

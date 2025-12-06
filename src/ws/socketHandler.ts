@@ -103,8 +103,15 @@ export function setupSocketIO(io: Server) {
         }
 
         // 1. Encontrar o chatID com base no incomingId (que pode ser regID ou chatID)
+        if (!incomingId) {
+          console.error('Erro: Nenhum ID fornecido (chatId ou serviceId)');
+          socket.emit('message_error', { error: 'Nenhum ID de chat ou serviço fornecido.' });
+          return;
+        }
+
         const chatRoom = await db.query.chat.findFirst({
-          where: eq(chat.fk_registro_servico_regID, incomingId),
+          where: (fields, { eq: eqOp }) => 
+            eqOp(fields.fk_registro_servico_regID, incomingId),
           columns: { chatID: true }
         });
         if (chatRoom && chatRoom.chatID) {

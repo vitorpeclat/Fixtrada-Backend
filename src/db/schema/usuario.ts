@@ -1,4 +1,4 @@
-import { boolean, date, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, date, doublePrecision, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { carro } from "./carro.ts";
 import { chat } from "./chat.ts";
@@ -22,6 +22,8 @@ export const usuario = pgTable('usuario', {
   usuCodigoVerificacaoExpira: timestamp('usuCodigoVerificacaoExpira', { withTimezone: true }),
   codigoResetSenha: text('codigoResetSenha'),
   codigoResetSenhaExpira: timestamp('codigoResetSenhaExpira', { withTimezone: true }),
+  latitude: doublePrecision('latitude'),
+  longitude: doublePrecision('longitude'),
 });
 
 export const usuarioRelations = relations(usuario, ({ many }) => ({

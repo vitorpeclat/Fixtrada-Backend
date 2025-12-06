@@ -9,6 +9,8 @@ export const criarClienteSchema = z.object({
   usuDataNasc: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de data inválido (AAAA-MM-DD).'),
   usuCpf: z.string().length(11, 'O CPF deve ter 11 dígitos.'),
   usuTelefone: z.string().optional(),
+  latitude: z.number().min(-90).max(90, 'Latitude inválida.'),
+  longitude: z.number().min(-180).max(180, 'Longitude inválida.'),
 });
 
 export const criarPrestadorSchema = z.object({
@@ -19,6 +21,8 @@ export const criarPrestadorSchema = z.object({
     .min(8, 'A senha deve ter no mínimo 8 caracteres.')
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'A senha deve conter pelo menos uma letra minúscula, uma maiúscula, um número e um caractere especial.'),
   mecEnderecoNum: z.number().int(),
+  latitude: z.number().min(-90).max(90, 'Latitude inválida.'),
+  longitude: z.number().min(-180).max(180, 'Longitude inválida.'),
   endereco: z.object({
     endCEP: z.string().length(8, 'O CEP deve ter 8 dígitos.'),
     endRua: z.string(),

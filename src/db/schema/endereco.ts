@@ -13,5 +13,4 @@ export const endereco = pgTable('endereco', {
 
 export const enderecoRelations = relations(endereco, ({ many }) => ({
   prestadores: many(prestadorServico),
-  registrosServico: many(registroServico),
 }));

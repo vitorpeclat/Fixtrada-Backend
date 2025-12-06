@@ -30,8 +30,7 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
                     with: {
                         usuario: true
                     }
-                },
-                endereco: true
+                }
             },
             orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
         });

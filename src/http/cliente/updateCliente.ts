@@ -27,6 +27,8 @@ export async function updateClienteRoutes(app: FastifyInstance) {
       if (typeof dados.email !== 'undefined') updates.usuLogin = dados.email;
       if (typeof dados.dataNascimento !== 'undefined') updates.usuDataNasc = dados.dataNascimento;
       if (typeof dados.telefone !== 'undefined') updates.usuTelefone = dados.telefone;
+      if (typeof dados.latitude !== 'undefined') updates.latitude = dados.latitude;
+      if (typeof dados.longitude !== 'undefined') updates.longitude = dados.longitude;
 
       // Se nenhum campo foi informado, retornar OK sem alterações
       if (Object.keys(updates).length === 0) {

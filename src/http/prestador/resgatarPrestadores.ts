@@ -42,12 +42,13 @@ export async function resgatarPrestadoresRoutes(app: FastifyInstance) {
       columns: {
         mecCNPJ: true,
         mecLogin: true,
+        mecNome: true,
         mecNota: true,
-        mecEnderecoNum: true,
         mecAtivo: true,
         mecFoto: true,
         latitude: true,
         longitude: true,
+        mecEnderecoNum: true,
         fk_endereco_endCEP: true,
       }
     });
@@ -70,12 +71,12 @@ export async function resgatarPrestadoresRoutes(app: FastifyInstance) {
         mecLogin: true,
         mecNome: true,
         mecNota: true,
-        mecEnderecoNum: true,
         mecAtivo: true,
         mecFoto: true,
         mecVerificado: true,
         latitude: true,
         longitude: true,
+        mecEnderecoNum: true,
         fk_endereco_endCEP: true,
       },
     });
