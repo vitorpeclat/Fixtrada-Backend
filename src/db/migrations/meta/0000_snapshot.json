@@ -1,5 +1,5 @@
 {
-  "id": "4c0761aa-e8ee-4fb4-96e4-b51ea28ce385",
+  "id": "dc48aecb-4b36-4310-9673-dbb8fd13c53d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -327,6 +327,12 @@
           "type": "double precision",
           "primaryKey": false,
           "notNull": false
+        },
+        "mecNome": {
+          "name": "mecNome",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
         },
         "mecEnderecoNum": {
           "name": "mecEnderecoNum",

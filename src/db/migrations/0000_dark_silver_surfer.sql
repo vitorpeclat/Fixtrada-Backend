@@ -43,6 +43,7 @@ CREATE TABLE "mensagem" (
 CREATE TABLE "prestador_servico" (
 	"mecCNPJ" varchar(14) PRIMARY KEY NOT NULL,
 	"mecNota" double precision,
+	"mecNome" varchar(100) NOT NULL,
 	"mecEnderecoNum" integer NOT NULL,
 	"mecLogin" varchar(50) NOT NULL,
 	"mecSenha" text NOT NULL,

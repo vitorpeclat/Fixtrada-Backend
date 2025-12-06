@@ -25,7 +25,13 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
                 isNull(registroServico.fk_prestador_servico_mecCNPJ)
             ),
             with: {
-                tipoServico: true
+                tipoServico: true,
+                carro: {
+                    with: {
+                        usuario: true
+                    }
+                },
+                endereco: true
             },
             orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
         });

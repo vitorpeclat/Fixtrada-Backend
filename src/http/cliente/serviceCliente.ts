@@ -11,7 +11,6 @@ import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { carro } from '../../db/schema/carro.ts';
 import { tipoServico } from '../../db/schema/tipoServico.ts';
 import { endereco } from '../../db/schema/endereco.ts';
-import { chat } from '../../db/schema/chat.ts';
 
 const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 
@@ -361,11 +360,6 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             return reply.status(400).send({ message: `Não é possível aceitar uma proposta para um serviço com status "${servico.regStatus}".` });
         }
 
-        // Garantir que há prestador vinculado à proposta
-        if (!servico.fk_prestador_servico_mecCNPJ) {
-            return reply.status(400).send({ message: 'Serviço sem prestador vinculado na proposta.' });
-        }
-
         // Atualizar o status do serviço para "em_andamento"
         const [servicoAtualizado] = await db
             .update(registroServico)
@@ -373,17 +367,9 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             .where(eq(registroServico.regID, id))
             .returning();
 
-        // Criar chat vinculado ao serviço
-        const [chatCriado] = await db.insert(chat).values({
-            fk_usuario_usuID: user.sub,
-            fk_prestador_servico_mecCNPJ: servico.fk_prestador_servico_mecCNPJ,
-            fk_registro_servico_regID: servico.regID
-        }).returning();
-
         return reply.send({
             message: 'Proposta aceita com sucesso. Serviço em andamento.',
-            servico: servicoAtualizado,
-            chat: chatCriado
+            servico: servicoAtualizado
         });
     });
 

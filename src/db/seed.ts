@@ -63,10 +63,12 @@ async function seed() {
             usuLogin: email,
             usuSenha: hashedPassword,
             usuNome: fullName,
-            usuDataNasc: faker.date.birthdate().toISOString(),
+            usuDataNasc: faker.date.birthdate().toISOString().split('T')[0],
             usuCpf: faker.string.numeric(11),
             usuTelefone: faker.string.numeric('119########'),
             usuAtivo: faker.datatype.boolean(),
+            usuVerificado: true, // Usuários seed já verificados
+            usuRole: 'cliente',
         }).returning();
         insertedUsuarios.push(insertedUsuario);
     }
@@ -77,7 +79,7 @@ async function seed() {
         const usuarioAleatorio = insertedUsuarios[Math.floor(Math.random() * insertedUsuarios.length)];
         const [insertedCarro] = await db.insert(carro).values({
             carID: uuidv4(),
-            carPlaca: faker.string.alphanumeric(7),
+            carPlaca: faker.string.alphanumeric(7).toUpperCase(),
             carMarca: faker.vehicle.manufacturer(),
             carModelo: faker.vehicle.model(),
             carAno: faker.date.past({ years: 10 }).getFullYear(),
@@ -85,10 +87,11 @@ async function seed() {
             carKM: faker.number.int({ min: 1000, max: 200000 }),
             carTpCombust: faker.vehicle.fuel(),
             carOpTracao: faker.helpers.arrayElement(['Dianteira', 'Traseira', 'Integral']),
-            carOpTrocaOleo: faker.date.future({ years: 1 }).toISOString(),
-            carOpTrocaPneu: faker.date.future({ years: 2 }).toISOString(),
+            carOpTrocaOleo: faker.date.future({ years: 1 }).toISOString().split('T')[0],
+            carOpTrocaPneu: faker.date.future({ years: 2 }).toISOString().split('T')[0],
             carOpRevisao: faker.lorem.words(5),
             carAtivo: true,
+            carFavorito: faker.datatype.boolean(),
             fk_usuario_usuID: usuarioAleatorio.usuID,
         }).returning();
         insertedCarros.push(insertedCarro);
@@ -100,12 +103,13 @@ async function seed() {
         const enderecoAleatorio = insertedEnderecos[Math.floor(Math.random() * insertedEnderecos.length)];
         const [insertedPrestador] = await db.insert(prestadorServico).values({
             mecCNPJ: faker.string.numeric(14),
-            mecNota: faker.number.float({ min: 1, max: 5}),
+            mecNota: faker.number.float({ min: 1, max: 5, fractionDigits: 1 }),
             mecNome: faker.company.name(),
             mecEnderecoNum: faker.number.int({ min: 100, max: 5000 }),
-            mecLogin: faker.internet.username(),
+            mecLogin: `prestador${i + 1}@prestador.com`,
             mecSenha: hashedPassword,
             mecAtivo: true,
+            mecVerificado: true, // Prestadores seed já verificados
             fk_endereco_endCEP: enderecoAleatorio.endCEP,
         }).returning();
         insertedPrestadores.push(insertedPrestador);
@@ -134,6 +138,7 @@ async function seed() {
         mecLogin: 'minasgerais@prestador.com',
         mecSenha: hashedPassword,
         mecAtivo: true,
+        mecVerificado: true,
         fk_endereco_endCEP: enderecoPrestadorFixo.endCEP,
     }).returning();
     insertedPrestadores.push(prestadorFixo);
@@ -151,25 +156,58 @@ async function seed() {
     console.log(`${tiposDeProblema.length} tipos de serviço inseridos com sucesso.`);
 
     // Geração de dados de Registro de Serviço (depende de Carro, Prestador e Tipo de Serviço)
+    const statusPossiveis = ['pendente', 'proposta', 'aceito', 'recusado', 'em_andamento', 'concluído', 'cancelado'];
+    
     for (let i = 0; i < 15; i++) {
         const carroAleatorio = insertedCarros[Math.floor(Math.random() * insertedCarros.length)];
-        const prestadorAleatorio = insertedPrestadores[Math.floor(Math.random() * insertedPrestadores.length)];
+        const enderecoAleatorio = insertedEnderecos[Math.floor(Math.random() * insertedEnderecos.length)];
         const tipoServicoAleatorio = insertedTiposServico[Math.floor(Math.random() * insertedTiposServico.length)];
         
-        const [insertedRegistro] = await db.insert(registroServico).values({
+        // Decidir se o serviço terá prestador vinculado
+        const temPrestador = faker.datatype.boolean();
+        const prestadorAleatorio = temPrestador 
+            ? insertedPrestadores[Math.floor(Math.random() * insertedPrestadores.length)]
+            : null;
+        
+        // Definir status baseado se tem prestador ou não
+        let status: string;
+        if (!temPrestador) {
+            status = 'pendente'; // Sem prestador, sempre pendente
+        } else {
+            // Com prestador, pode ter qualquer status exceto pendente
+            status = faker.helpers.arrayElement(['proposta', 'aceito', 'em_andamento', 'concluído', 'recusado']);
+        }
+        
+        // Gerar valor se o status for proposta, em_andamento ou concluído
+        const valor = ['proposta', 'em_andamento', 'concluído'].includes(status)
+            ? faker.number.float({ min: 100, max: 2000, fractionDigits: 2 })
+            : null;
+        
+        // Gerar nota e comentário apenas para serviços concluídos
+        const notaCliente = status === 'concluído' 
+            ? faker.number.int({ min: 1, max: 5 })
+            : null;
+        const comentarioCliente = status === 'concluído'
+            ? faker.lorem.sentence()
+            : null;
+        
+        await db.insert(registroServico).values({
             regID: uuidv4(),
-            regCodigo: nanoid(), // Gera código único de 8 caracteres
+            regCodigo: nanoid(),
             regDescricao: faker.lorem.sentence(),
             regData: faker.date.past({ years: 1 }).toISOString().split('T')[0],
             regHora: faker.date.recent(),
-            fk_endereco_endCEP: prestadorAleatorio.fk_endereco_endCEP,
+            regStatus: status,
+            regValor: valor,
+            regNotaCliente: notaCliente,
+            regComentarioCliente: comentarioCliente,
+            fk_endereco_endCEP: enderecoAleatorio.endCEP,
             fk_carro_carID: carroAleatorio.carID,
-            fk_prestador_servico_mecCNPJ: prestadorAleatorio.mecCNPJ,
+            fk_prestador_servico_mecCNPJ: prestadorAleatorio?.mecCNPJ || null,
             fk_tipo_servico_tseID: tipoServicoAleatorio.tseID,
-        }).returning();
-        
+        });
     }
-    console.log('15 registros de serviço e mensagens associadas inseridos com sucesso.');
+    console.log('15 registros de serviço inseridos com sucesso.');
 
     // Geração de Chats INDEPENDENTES (sem registro de serviço)
     console.log('Iniciando geração de chats independentes (sem serviço)...');

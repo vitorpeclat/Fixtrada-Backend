@@ -36,5 +36,9 @@ export const registroServicoRelations = relations(registroServico, ({ one, many 
     fields: [registroServico.fk_tipo_servico_tseID],
     references: [tipoServico.tseID],
   }),
+  endereco: one(endereco, {
+    fields: [registroServico.fk_endereco_endCEP],
+    references: [endereco.endCEP],
+  }),
   chats: many(chat),
 }));
