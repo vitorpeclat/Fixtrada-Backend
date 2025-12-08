@@ -1,4 +1,4 @@
-import { sql, eq, and, inArray, desc, or, isNull } from 'drizzle-orm';
+import { sql, eq, and, inArray, desc, or, isNull, isNotNull } from 'drizzle-orm';
 import type { FastifyInstance } from 'fastify';
 import { db } from '../db/connection.ts';
 import { mensagem } from '../db/schema/mensagem.ts';
@@ -114,8 +114,11 @@ export async function meusChatsRoutes(app: FastifyInstance) {
                 and(
                     eq(chat.fk_usuario_usuID, userId), // 1. Filtro pelo cliente
                     or( // 2. Filtro de status
-                        isNull(chat.fk_registro_servico_regID),
-                        inArray(registroServico.regStatus, ['Aceito', 'Em_Andamento', 'pendente'])
+                        isNull(chat.fk_registro_servico_regID), // Chat sem serviço
+                        and(
+                            isNotNull(registroServico.regStatus), // Garantir que o status não é null
+                            inArray(registroServico.regStatus, ['aceito', 'em_andamento', 'pendente'])
+                        )
                     )
                 )
             )
@@ -136,8 +139,11 @@ export async function meusChatsRoutes(app: FastifyInstance) {
                 and(
                     eq(chat.fk_prestador_servico_mecCNPJ, userId), // 1. Filtro pelo prestador
                     or( // 2. Filtro de status
-                        isNull(chat.fk_registro_servico_regID),
-                        inArray(registroServico.regStatus, ['Aceito', 'pendente', 'Em_Andamento'])
+                        isNull(chat.fk_registro_servico_regID), // Chat sem serviço
+                        and(
+                            isNotNull(registroServico.regStatus), // Garantir que o status não é null
+                            inArray(registroServico.regStatus, ['aceito', 'pendente', 'em_andamento'])
+                        )
                     )
                 )
             )

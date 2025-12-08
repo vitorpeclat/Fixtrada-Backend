@@ -30,7 +30,8 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
                     with: {
                         usuario: true
                     }
-                }
+                },
+                chats: true
             },
             orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
         });
@@ -151,7 +152,8 @@ export async function servicosPrestadorRoutes(app: FastifyInstance) {
         const meusServicos = await db.query.registroServico.findMany({
             where: eq(registroServico.fk_prestador_servico_mecCNPJ, prestadorId),
             with: {
-                tipoServico: true
+                tipoServico: true,
+                chats: true
             },
             orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
         });
