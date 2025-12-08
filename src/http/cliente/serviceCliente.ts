@@ -10,6 +10,7 @@ import { emitNewServiceNotification } from '../../ws/socketHandler.ts';
 import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { carro } from '../../db/schema/carro.ts';
 import { tipoServico } from '../../db/schema/tipoServico.ts';
+import { chat } from '../../db/schema/chat.ts';
 
 const nanoid = customAlphabet('1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ', 8);
 
@@ -264,12 +265,18 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             return reply.status(403).send({ message: 'Acesso negado.' });
         }
 
+        console.log('Buscando serviços para usuário:', user.sub);
+
         // Buscar todos os carros do cliente
         const carros = await db.query.carro.findMany({
             where: eq(carro.fk_usuario_usuID, user.sub)
         });
+        
+        console.log('Carros encontrados para usuário', user.sub, ':', carros.map(c => ({ id: c.carID, marca: c.carMarca, usuario: c.fk_usuario_usuID })));
+        
         const carrosIds = carros.map(c => c.carID);
         if (carrosIds.length === 0) {
+            console.log('Nenhum carro encontrado para o usuário');
             return reply.send([]);
         }
 
@@ -279,14 +286,22 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
                 inArray(fields.fk_carro_carID, carrosIds) && or(eqOp(fields.regStatus, 'proposta'), eqOp(fields.regStatus, 'em_andamento')),
             orderBy: (fields, { desc }) => [desc(fields.regData), desc(fields.regHora)]
         });
-        if (servicos.length === 0) {
+        
+        console.log('Serviços encontrados (antes da validação):', servicos.length, servicos.map(s => ({ id: s.regID, carro: s.fk_carro_carID, status: s.regStatus, prestador: s.fk_prestador_servico_mecCNPJ })));
+
+        // Validação extra: garantir que todos os serviços realmente pertencem aos carros do usuário
+        const servicosValidos = servicos.filter(s => carrosIds.includes(s.fk_carro_carID));
+        
+        console.log('Serviços após validação:', servicosValidos.length, servicosValidos.map(s => ({ id: s.regID, carro: s.fk_carro_carID, status: s.regStatus, prestador: s.fk_prestador_servico_mecCNPJ })));
+        
+        if (servicosValidos.length === 0) {
             return reply.send([]);
         }
 
         // Coletar todos os IDs relacionados
-        const carroIdsSet = new Set(servicos.map(s => s.fk_carro_carID));
-        const tipoServicoIdsSet = new Set(servicos.map(s => s.fk_tipo_servico_tseID));
-        const prestadorCnpjsSet = new Set(servicos.map(s => s.fk_prestador_servico_mecCNPJ).filter(Boolean));
+        const carroIdsSet = new Set(servicosValidos.map(s => s.fk_carro_carID));
+        const tipoServicoIdsSet = new Set(servicosValidos.map(s => s.fk_tipo_servico_tseID));
+        const prestadorCnpjsSet = new Set(servicosValidos.map(s => s.fk_prestador_servico_mecCNPJ).filter(Boolean));
 
         // Buscar dados relacionados em batch
         const [carrosRelacionados, tiposServicoRelacionados, prestadoresRelacionados] = await Promise.all([
@@ -303,7 +318,7 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
         const prestadoresMap = new Map(prestadoresRelacionados.map(p => [p.mecCNPJ, p]));
 
         // Montar array de cards
-        const cards = servicos.map(servico => ({
+        const cards = servicosValidos.map(servico => ({
             id: servico.regID,
             codigo: servico.regCodigo,
             status: servico.regStatus,
@@ -320,6 +335,7 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             prestador: servico.fk_prestador_servico_mecCNPJ ? prestadoresMap.get(servico.fk_prestador_servico_mecCNPJ) || null : null
         }));
 
+        console.log('Cards a retornar:', cards.length);
         return reply.send(cards);
     });
 
@@ -355,6 +371,11 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             return reply.status(400).send({ message: `Não é possível aceitar uma proposta para um serviço com status "${servico.regStatus}".` });
         }
 
+        // Verificar se há prestador vinculado
+        if (!servico.fk_prestador_servico_mecCNPJ) {
+            return reply.status(400).send({ message: 'Este serviço não tem um prestador vinculado.' });
+        }
+
         // Atualizar o status do serviço para "em_andamento"
         const [servicoAtualizado] = await db
             .update(registroServico)
@@ -362,10 +383,29 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             .where(eq(registroServico.regID, id))
             .returning();
 
-        return reply.send({
-            message: 'Proposta aceita com sucesso. Serviço em andamento.',
-            servico: servicoAtualizado
-        });
+        // Criar chat entre cliente e prestador
+        try {
+            const [novoChat] = await db.insert(chat).values({
+                fk_usuario_usuID: user.sub,
+                fk_prestador_servico_mecCNPJ: servico.fk_prestador_servico_mecCNPJ,
+                fk_registro_servico_regID: id
+            }).returning();
+
+            console.log('Chat criado com sucesso:', novoChat.chatID);
+
+            return reply.send({
+                message: 'Proposta aceita com sucesso. Serviço em andamento e chat iniciado.',
+                servico: servicoAtualizado,
+                chat: novoChat
+            });
+        } catch (chatError: any) {
+            console.error('Erro ao criar chat:', chatError);
+            // Mesmo com erro no chat, a proposta foi aceita
+            return reply.send({
+                message: 'Proposta aceita com sucesso. Serviço em andamento. (Erro ao criar chat)',
+                servico: servicoAtualizado
+            });
+        }
     });
 
     // Rota para recusar a proposta de um serviço
