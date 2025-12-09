@@ -162,7 +162,7 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
         const { id } = request.params as { id: string };
         const user = request.user as JwtUserPayload;
         
-        if (!user || user.role !== 'cliente') {
+        if (!user || (user.role !== 'cliente' && user.role !== 'prestador')) {
             return reply.status(403).send({ message: 'Acesso negado.' });
         }
 
@@ -175,22 +175,31 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             return reply.status(404).send({ message: 'Serviço não encontrado.' });
         }
 
-        // Verificar se o serviço pertence a um carro do cliente
-        const carroDono = await db.query.carro.findFirst({
-            where: eq(carro.carID, servico.fk_carro_carID)
-        });
+        // Verificar permissão baseada no tipo de usuário
+        if (user.role === 'cliente') {
+            // Verificar se o serviço pertence a um carro do cliente
+            const carroDono = await db.query.carro.findFirst({
+                where: eq(carro.carID, servico.fk_carro_carID)
+            });
 
-        if (!carroDono || carroDono.fk_usuario_usuID !== user.sub) {
-            return reply.status(403).send({ message: 'Você não tem permissão para acessar este serviço.' });
+            if (!carroDono || carroDono.fk_usuario_usuID !== user.sub) {
+                return reply.status(403).send({ message: 'Você não tem permissão para acessar este serviço.' });
+            }
+        } else if (user.role === 'prestador') {
+            // Verificar se o serviço está associado ao prestador
+            if (!servico.fk_prestador_servico_mecCNPJ || servico.fk_prestador_servico_mecCNPJ !== user.sub) {
+                return reply.status(403).send({ message: 'Você não tem permissão para acessar este serviço.' });
+            }
         }
 
         // Buscar dados relacionados
-        const [carroRelacionado, tipoServicoRelacionado, prestadorRelacionado] = await Promise.all([
+        const [carroRelacionado, tipoServicoRelacionado, prestadorRelacionado, chatRelacionado] = await Promise.all([
             db.query.carro.findFirst({ where: eq(carro.carID, servico.fk_carro_carID) }),
             db.query.tipoServico.findFirst({ where: eq(tipoServico.tseID, servico.fk_tipo_servico_tseID) }),
             servico.fk_prestador_servico_mecCNPJ 
                 ? db.query.prestadorServico.findFirst({ where: eq(prestadorServico.mecCNPJ, servico.fk_prestador_servico_mecCNPJ) })
-                : Promise.resolve(null)
+                : Promise.resolve(null),
+            db.query.chat.findFirst({ where: eq(chat.fk_registro_servico_regID, servico.regID) })
         ]);
 
         // Montar card do serviço
@@ -208,7 +217,8 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             longitude: servico.regLongitude,
             carro: carroRelacionado || null,
             tipoServico: tipoServicoRelacionado || null,
-            prestador: prestadorRelacionado || null
+            prestador: prestadorRelacionado || null,
+            chatID: chatRelacionado?.chatID || null
         };
         return reply.send(card);
     });

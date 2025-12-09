@@ -11,7 +11,9 @@ export async function avaliarServicoRoutes(app: FastifyInstance) {
 
     const paramsSchema = z.object({ serviceId: z.string().uuid() });
     const bodySchema = z.object({
-        nota: z.number().int().min(1).max(5),
+        nota: z.number().min(0.5).max(5).refine((val) => val % 0.5 === 0, {
+            message: "A nota deve ser um múltiplo de 0.5 (exemplo: 1, 1.5, 2, 2.5, etc.)"
+        }),
         comentario: z.string().max(500).optional(),
     });
 
