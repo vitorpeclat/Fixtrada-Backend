@@ -228,7 +228,7 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
         const { id } = request.params as { id: string };
         const user = request.user as JwtUserPayload;
         
-        if (!user || user.role !== 'cliente') {
+        if (!user || (user.role !== 'cliente' && user.role !== 'prestador')) {
             return reply.status(403).send({ message: 'Acesso negado.' });
         }
 
@@ -241,13 +241,21 @@ export async function serviceClienteRoutes(app: FastifyInstance) {
             return reply.status(404).send({ message: 'Serviço não encontrado.' });
         }
 
-        // Verificar se o serviço pertence a um carro do cliente
-        const carroDono = await db.query.carro.findFirst({
-            where: eq(carro.carID, servico.fk_carro_carID)
-        });
+        // Verificar permissão baseada no tipo de usuário
+        if (user.role === 'cliente') {
+            // Verificar se o serviço pertence a um carro do cliente
+            const carroDono = await db.query.carro.findFirst({
+                where: eq(carro.carID, servico.fk_carro_carID)
+            });
 
-        if (!carroDono || carroDono.fk_usuario_usuID !== user.sub) {
-            return reply.status(403).send({ message: 'Você não tem permissão para finalizar este serviço.' });
+            if (!carroDono || carroDono.fk_usuario_usuID !== user.sub) {
+                return reply.status(403).send({ message: 'Você não tem permissão para finalizar este serviço.' });
+            }
+        } else if (user.role === 'prestador') {
+            // Verificar se o serviço está associado ao prestador
+            if (!servico.fk_prestador_servico_mecCNPJ || servico.fk_prestador_servico_mecCNPJ !== user.sub) {
+                return reply.status(403).send({ message: 'Você não tem permissão para finalizar este serviço.' });
+            }
         }
 
         // Verificar se o serviço já está concluído
