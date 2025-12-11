@@ -9,7 +9,7 @@ export const registroServico = pgTable('registro_servico', {
   regID: uuid('regID').primaryKey().defaultRandom(),
   // NOVOS CAMPOS ADICIONADOS
   regCodigo: varchar('regCodigo', { length: 8 }).unique(), // Código único de 8 caracteres
-  regNotaCliente: integer('regNotaCliente'), // Nota que o cliente dará ao serviço
+  regNotaCliente: doublePrecision('regNotaCliente'), // Nota que o cliente dará ao serviço
   regComentarioCliente: text('regComentarioCliente'), // Comentário do cliente sobre o serviço
   regValor: doublePrecision('regValor'), // Valor do serviço ou visita
   regStatus: varchar('regStatus', { length: 20 }).notNull().default('pendente'), // pendente, aceito, recusado, em_andamento, concluído, cancelado
