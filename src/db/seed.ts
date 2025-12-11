@@ -52,6 +52,47 @@ async function seed() {
     const plainPassword = '12345aA@';
     const hashedPassword = await bcrypt.hash(plainPassword, 8);
 
+    // Criar usuário administrador
+    const [adminUser] = await db.insert(usuario).values({
+        usuID: uuidv4(),
+        usuLogin: 'admin',
+        usuSenha: hashedPassword, // senha: 12345aA@
+        usuNome: 'Administrador',
+        usuDataNasc: '1990-01-01',
+        usuCpf: '00000000000',
+        usuTelefone: '11900000000',
+        usuAtivo: true,
+        usuVerificado: true,
+        usuRole: 'admin',
+    }).returning();
+    insertedUsuarios.push(adminUser);
+    console.log('Usuário administrador criado com sucesso (login: admin, senha: 12345aA@)');
+
+    // Criar endereço para prestador de teste
+    const [enderecoPrestadorTeste] = await db.insert(endereco).values({
+        endCEP: '01310100',
+        endRua: 'Avenida Paulista',
+        endBairro: 'Bela Vista',
+        endCidade: 'São Paulo',
+        endEstado: 'SP',
+    }).onConflictDoNothing().returning();
+    insertedEnderecos.push(enderecoPrestadorTeste);
+
+    // Criar prestador de teste
+    const [prestadorTeste] = await db.insert(prestadorServico).values({
+        mecCNPJ: '12345678000100',
+        mecNota: 5.0,
+        mecNome: 'Oficina Teste',
+        mecEnderecoNum: 1000,
+        mecLogin: 'prestador@teste.com',
+        mecSenha: hashedPassword, // senha: 12345aA@
+        mecAtivo: true,
+        mecVerificado: true,
+        fk_endereco_endCEP: enderecoPrestadorTeste.endCEP,
+    }).returning();
+    insertedPrestadores.push(prestadorTeste);
+    console.log('Prestador de teste criado com sucesso (login: prestador@teste.com, senha: 12345aA@)');
+
     for (let i = 0; i < 5; i++) {
         const fullName = faker.person.fullName();
         const firstName = fullName.split(' ')[0] || `user${i + 1}`;
@@ -72,7 +113,7 @@ async function seed() {
         }).returning();
         insertedUsuarios.push(insertedUsuario);
     }
-    console.log('5 usuários inseridos com sucesso.');
+    console.log('5 usuários clientes inseridos com sucesso.');
 
     // Geração de dados de Carro (depende de Usuário)
     for (let i = 0; i < 10; i++) {

@@ -4,11 +4,15 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { db } from '../../db/connection.ts';
 import { usuario } from '../../db/schema/usuario.ts';
-import { loginSchema } from '../schemas/auth.ts';
+
+const loginAdminSchema = z.object({
+  login: z.string().min(1, 'O login é obrigatório.'),
+  senha: z.string().min(1, 'A senha é obrigatória.'),
+});
 
 export async function loginAdminRoutes(app: FastifyInstance) {
   app.post('/admin/login', async (request, reply) => {
-      const { login, senha } = loginSchema.parse(request.body);
+      const { login, senha } = loginAdminSchema.parse(request.body);
 
       const user = await db.query.usuario.findFirst({
         where: eq(usuario.usuLogin, login),

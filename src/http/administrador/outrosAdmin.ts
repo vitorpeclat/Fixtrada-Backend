@@ -1,6 +1,9 @@
 import type { FastifyInstance } from 'fastify';
 import { db } from '../../db/connection.ts';
 import { registroServico } from '../../db/schema/registroServico.ts';
+import { carro } from '../../db/schema/carro.ts';
+import { usuario } from '../../db/schema/usuario.ts';
+import { prestadorServico } from '../../db/schema/prestadorServico.ts';
 import { adminAuthHook } from '../hooks/adminAuth.ts';
 import { sql, count } from 'drizzle-orm';
 
@@ -11,8 +14,25 @@ export async function outrosAdminRoutes(app: FastifyInstance) {
     app.get('/admin/historico-completo', async (request, reply) => {
         const historico = await db.query.registroServico.findMany({
             orderBy: (registroServico, { desc }) => [desc(registroServico.regData)],
+            with: {
+                carro: {
+                    with: {
+                        usuario: true
+                    }
+                },
+                prestadorServico: true
+            }
         });
-        return reply.send(historico);
+
+        // Mapear para incluir nomes
+        const historicoFormatado = historico.map(servico => ({
+            ...servico,
+            regClienteID: servico.carro?.fk_usuario_usuID,
+            clienteNome: servico.carro?.usuario?.usuNome,
+            prestadorNome: servico.prestadorServico?.mecNome || servico.prestadorServico?.mecNomeEmpresa
+        }));
+
+        return reply.send(historicoFormatado);
     });
 
     // Relatórios (RF017)

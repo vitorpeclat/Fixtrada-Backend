@@ -43,7 +43,7 @@ const app = Fastify({ logger: true });
 
 // Registra o plugin CORS para permitir requisições do frontend
 app.register(cors, {
-  origin: ['http://localhost:5173'], // Em produção, especifique os domínios permitidos, ex: ['http://localhost:3000', 'https://seuapp.com']
+  origin: ['http://localhost:5173', 'http://localhost:5174'], // Prestador Web (5173) e Admin (5174)
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
 });

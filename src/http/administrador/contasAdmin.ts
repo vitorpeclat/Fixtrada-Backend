@@ -24,7 +24,26 @@ export async function contasAdminRoutes(app: FastifyInstance) {
     });
 
     const clienteParamsSchema = z.object({ id: z.string().uuid() });
-    // Desativar conta de cliente
+    const clienteBodySchema = z.object({ ativo: z.boolean() });
+    
+    // Alterar status de conta de cliente (ativar/desativar)
+    app.patch('/admin/clientes/:id', async (request, reply) => {
+        const { id } = clienteParamsSchema.parse(request.params);
+        const { ativo } = clienteBodySchema.parse(request.body);
+        
+        const [updatedUser] = await db.update(usuario)
+            .set({ usuAtivo: ativo })
+            .where(eq(usuario.usuID, id))
+            .returning();
+
+        if (!updatedUser) {
+            return reply.status(404).send({ message: 'Cliente não encontrado.' });
+        }
+
+        return reply.send(updatedUser);
+    });
+
+    // Desativar conta de cliente (mantido para compatibilidade)
     app.delete('/admin/clientes/:id', async (request, reply) => {
         const { id } = clienteParamsSchema.parse(request.params);
         
@@ -41,7 +60,26 @@ export async function contasAdminRoutes(app: FastifyInstance) {
     });
 
     const prestadorParamsSchema = z.object({ id: z.string() }); // CNPJ é string
-    // Desativar conta de prestador
+    const prestadorBodySchema = z.object({ ativo: z.boolean() });
+    
+    // Alterar status de conta de prestador (ativar/desativar)
+    app.patch('/admin/prestadores/:id', async (request, reply) => {
+        const { id } = prestadorParamsSchema.parse(request.params);
+        const { ativo } = prestadorBodySchema.parse(request.body);
+
+        const [updatedProvider] = await db.update(prestadorServico)
+            .set({ mecAtivo: ativo })
+            .where(eq(prestadorServico.mecCNPJ, id))
+            .returning();
+        
+        if (!updatedProvider) {
+            return reply.status(404).send({ message: 'Prestador não encontrado.' });
+        }
+
+        return reply.send(updatedProvider);
+    });
+
+    // Desativar conta de prestador (mantido para compatibilidade)
     app.delete('/admin/prestadores/:id', async (request, reply) => {
         const { id } = prestadorParamsSchema.parse(request.params);
 
